@@ -1,7 +1,16 @@
 export const prerender = false;
 
+function getEnv(context) {
+	return (
+		context.locals?.runtime?.env ??
+		context.locals?.cloudflare?.env ??
+		context.env ??
+		{}
+	);
+}
+
 export async function GET(context) {
-	const env = context.locals.runtime?.env ?? {};
+	const env = getEnv(context);
 	const clientId = env.GITHUB_CLIENT_ID;
 
 	if (!clientId) {
