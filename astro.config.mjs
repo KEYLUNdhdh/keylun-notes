@@ -31,11 +31,15 @@ import { remarkMermaid } from "./src/plugins/remark-mermaid.js";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
 
 
+import cloudflare from "@astrojs/cloudflare";
+
+
 // Ref: https://astro.build/config
 export default defineConfig({
     site: siteConfig.siteURL,
     base: "/",
     trailingSlash: "always",
+
     integrations: [
         swup({
             theme: false,
@@ -125,6 +129,7 @@ export default defineConfig({
         }),
         sitemap(),
     ],
+
     markdown: {
         remarkPlugins: [
             remarkMath,
@@ -190,6 +195,10 @@ export default defineConfig({
             rehypeLazyLoadMedia,
         ],
     },
+
+    //build: {
+    //    inlineStylesheets: "always",
+    //},
     vite: {
         plugins: [tailwindcss()],
         build: {
@@ -212,7 +221,6 @@ export default defineConfig({
             },
         },
     },
-    //build: {
-    //    inlineStylesheets: "always",
-    //},
+
+    adapter: cloudflare()
 });
