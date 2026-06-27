@@ -48,6 +48,30 @@ tags: ["algorithm", "paper-reading"]
 
 当前 `backend.name` 是 `github`，仓库指向 `KEYLUNdhdh/keylun-notes`。正式可写还需要给 Decap CMS 配 GitHub OAuth proxy。
 
+已包含 Cloudflare Pages Functions OAuth proxy：
+
+- `/api/auth`
+- `/api/callback`
+
+在 GitHub OAuth App 中使用：
+
+```text
+Homepage URL:
+https://keylun-notes.yexinnan20070127.workers.dev/admin/
+
+Authorization callback URL:
+https://keylun-notes.yexinnan20070127.workers.dev/api/callback
+```
+
+然后在 Cloudflare 项目环境变量中添加：
+
+```text
+GITHUB_CLIENT_ID
+GITHUB_CLIENT_SECRET
+```
+
+`GITHUB_CLIENT_SECRET` 必须设为加密/Secret 变量，不要提交到仓库。
+
 如果想在本地让后台直接写入当前项目文件：
 
 1. 把 `public/admin/config.yml` 里的 backend 临时改成：

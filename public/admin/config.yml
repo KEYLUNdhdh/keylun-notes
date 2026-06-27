@@ -2,11 +2,15 @@ backend:
   name: github
   repo: KEYLUNdhdh/keylun-notes
   branch: main
+  base_url: https://keylun-notes.yexinnan20070127.workers.dev
+  auth_endpoint: /api/auth
 
 local_backend: true
 publish_mode: editorial_workflow
 media_folder: "public/uploads"
 public_folder: "/uploads"
+site_url: "https://keylun-notes.yexinnan20070127.workers.dev"
+display_url: "https://keylun-notes.yexinnan20070127.workers.dev"
 logo_url: "/avatar.png"
 locale: "zh_Hans"
 
