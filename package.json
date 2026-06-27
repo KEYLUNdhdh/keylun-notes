@@ -9,6 +9,7 @@
 		"check": "astro check",
 		"dev": "node scripts/generate-icons.js && astro dev",
 		"build": "node scripts/generate-icons.js && node scripts/build-with-pagefind.cjs",
+		"deploy": "wrangler pages deploy dist --project-name=keylun-notes --branch=main",
 		"preview": "astro preview",
 		"astro": "astro",
 		"new-post": "node scripts/new-post.js"
@@ -79,7 +80,8 @@
 		"@types/markdown-it": "^14.1.2",
 		"@types/mdast": "^4.0.4",
 		"@types/sanitize-html": "^2.16.1",
-		"postcss-import": "^16.1.1"
+		"postcss-import": "^16.1.1",
+		"wrangler": "^4.105.0"
 	},
 	"packageManager": "pnpm@9.14.4"
 }
