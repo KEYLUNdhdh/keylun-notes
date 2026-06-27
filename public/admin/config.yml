@@ -57,4 +57,11 @@ collections:
               - { label: "专业/学院", name: "program", widget: "string" }
               - { label: "时间", name: "time", widget: "string" }
               - { label: "说明", name: "detail", widget: "text" }
-          - { label: "联系方式", name: "contact", widget: "text" }
+          - { label: "联系方式说明", name: "contact", widget: "text" }
+          - label: "超链接"
+            name: "links"
+            widget: "list"
+            hint: "可以添加 GitHub、邮箱、简历、Google Scholar、项目主页等链接。"
+            fields:
+              - { label: "显示名称", name: "label", widget: "string", hint: "例如 GitHub、Email、Resume" }
+              - { label: "链接地址", name: "url", widget: "string", hint: "例如 https://github.com/KEYLUNdhdh 或 mailto:you@example.com" }
