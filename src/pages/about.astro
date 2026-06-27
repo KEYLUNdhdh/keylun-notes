@@ -12,24 +12,31 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 		<BaseHead title={`关于 | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
+		<div class="site-bg"></div>
 		<Header />
 		<main>
-			<section class="page-heading">
-				<p class="eyebrow">About</p>
-				<h1>关于我</h1>
-				<p class="multiline">{profile.aboutIntro}</p>
+			<section class="about-hero glass-panel">
+				<img src={profile.avatar} alt="博客头像" width="150" height="150" />
+				<div>
+					<p class="eyebrow">关于我</p>
+					<h1>{profile.name}</h1>
+					<p class="multiline">{profile.aboutIntro}</p>
+					<div class="profile-links">
+						{profile.links.map((link) => <a href={link.url} target="_blank" rel="noreferrer">{link.label}</a>)}
+					</div>
+				</div>
 			</section>
 
-			<section class="content-block">
+			<section class="content-block glass-panel">
 				<h2>当前关注</h2>
-				<ul>
+				<ul class="focus-list">
 					{profile.focus.map((item) => <li>{item}</li>)}
 				</ul>
 			</section>
 
-			<section class="content-block">
+			<section class="content-block glass-panel">
 				<h2>教育经历</h2>
-				<div class="education-list">
+				<div class="education-list large">
 					{
 						profile.education.map((item) => (
 							<article>
@@ -38,7 +45,7 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 									<h3>{item.school}</h3>
 									<p>{item.program}</p>
 									<time>{item.time}</time>
-									<p>{item.detail}</p>
+									<p class="multiline">{item.detail}</p>
 								</div>
 							</article>
 						))
@@ -46,20 +53,9 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 				</div>
 			</section>
 
-			<section class="content-block">
-				<h2>联系</h2>
+			<section class="content-block glass-panel">
+				<h2>联系方式</h2>
 				<p class="multiline">{profile.contact}</p>
-				{
-					profile.links.length > 0 && (
-						<div class="profile-links">
-							{profile.links.map((link) => (
-								<a href={link.url} target="_blank" rel="noreferrer">
-									{link.label}
-								</a>
-							))}
-						</div>
-					)
-				}
 			</section>
 		</main>
 		<Footer />

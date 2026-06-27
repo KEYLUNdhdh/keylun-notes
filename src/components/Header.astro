@@ -12,60 +12,84 @@ import HeaderLink from './HeaderLink.astro';
 			<HeaderLink href="/tags">标签</HeaderLink>
 			<HeaderLink href="/projects">项目</HeaderLink>
 			<HeaderLink href="/about">关于</HeaderLink>
+			<a href="/admin/">管理</a>
 		</div>
 	</nav>
 </header>
+
 <style>
 	header {
-		margin: 0;
-		padding: 0 1rem;
-		background: rgba(255, 255, 255, 0.9);
-		border-bottom: 1px solid rgb(var(--gray-light));
-		backdrop-filter: blur(16px);
 		position: sticky;
 		top: 0;
-		z-index: 10;
-	}
-	h2 {
-		margin: 0;
-		font-size: 1em;
-	}
-
-	h2 a,
-	h2 a.active {
-		text-decoration: none;
+		z-index: 50;
+		padding: 0.85rem 1rem;
+		pointer-events: none;
 	}
 	nav {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		gap: 1rem;
-		max-width: 1040px;
+		max-width: 1180px;
 		margin: 0 auto;
+		padding: 0.55rem 0.8rem;
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 18px;
+		background: rgba(13, 17, 29, 0.72);
+		box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+		backdrop-filter: blur(18px);
+		pointer-events: auto;
 	}
+	h2 {
+		margin: 0;
+		font-size: 1rem;
+	}
+	h2 a,
 	nav a {
-		display: inline-block;
-		padding: 1rem 0.5rem;
-		color: var(--black);
-		border-bottom: 3px solid transparent;
+		color: rgba(255, 255, 255, 0.88);
 		text-decoration: none;
 	}
-	nav a.active {
-		text-decoration: none;
-		border-bottom-color: var(--accent);
+	h2 a {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		padding: 0.45rem 0.65rem;
+		font-weight: 800;
+	}
+	h2 a::before {
+		content: "";
+		width: 0.7rem;
+		height: 0.7rem;
+		border-radius: 999px;
+		background: var(--accent);
+		box-shadow: 0 0 24px var(--accent);
 	}
 	.internal-links {
 		display: flex;
+		align-items: center;
 		gap: 0.25rem;
 	}
-	@media (max-width: 720px) {
+	.internal-links a {
+		display: inline-flex;
+		align-items: center;
+		min-height: 2.35rem;
+		padding: 0 0.72rem;
+		border-radius: 12px;
+		font-size: 0.95rem;
+	}
+	.internal-links a:hover,
+	.internal-links a.active {
+		background: rgba(255, 255, 255, 0.12);
+		color: #fff;
+	}
+	@media (max-width: 760px) {
+		header {
+			padding: 0.5rem;
+		}
 		nav {
 			align-items: flex-start;
 			flex-direction: column;
-			padding: 0.75rem 0;
-		}
-		nav a {
-			padding: 0.25rem 0.5rem 0.5rem 0;
+			border-radius: 16px;
 		}
 		.internal-links {
 			flex-wrap: wrap;

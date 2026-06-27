@@ -31,10 +31,11 @@ const posts = sortPosts(allPosts.filter((post) => post.data.tags.includes(curren
 		<BaseHead title={`${currentTag} | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
+		<div class="site-bg"></div>
 		<Header />
 		<main>
-			<section class="page-heading">
-				<p class="eyebrow">Tag</p>
+			<section class="page-heading glass-panel">
+				<p class="eyebrow">标签</p>
 				<h1>{currentTag}</h1>
 				<p>该标签下共有 {posts.length} 篇文章。</p>
 			</section>

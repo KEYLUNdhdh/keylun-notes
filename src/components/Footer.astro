@@ -5,18 +5,19 @@ const today = new Date();
 ---
 
 <footer>
-	<p>&copy; {today.getFullYear()} {SITE_AUTHOR}. Built with Astro.</p>
+	<p>&copy; {today.getFullYear()} {SITE_AUTHOR}. 以 Astro 构建，灵感来自 Twilight。</p>
 	<div class="social-links">
 		<a href="/rss.xml">RSS</a>
-		<a href={GITHUB_URL} target="_blank">GitHub</a>
+		<a href={GITHUB_URL} target="_blank" rel="noreferrer">GitHub</a>
 	</div>
 </footer>
+
 <style>
 	footer {
-		padding: 2rem 1rem 4rem;
-		background: #fff;
-		border-top: 1px solid rgb(var(--gray-light));
-		color: rgb(var(--gray));
+		max-width: 1180px;
+		margin: 3rem auto 0;
+		padding: 2rem 1rem 3rem;
+		color: rgba(226, 232, 240, 0.72);
 		text-align: center;
 	}
 	footer p {
@@ -29,10 +30,10 @@ const today = new Date();
 		margin-top: 0.75rem;
 	}
 	.social-links a {
+		color: rgba(255, 255, 255, 0.76);
 		text-decoration: none;
-		color: rgb(var(--gray));
 	}
 	.social-links a:hover {
-		color: rgb(var(--gray-dark));
+		color: #fff;
 	}
 </style>

@@ -16,12 +16,13 @@ const tags = getTagCounts(posts);
 		<BaseHead title={`标签 | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
+		<div class="site-bg"></div>
 		<Header />
 		<main>
-			<section class="page-heading">
-				<p class="eyebrow">Tags</p>
+			<section class="page-heading glass-panel">
+				<p class="eyebrow">主题索引</p>
 				<h1>标签</h1>
-				<p>按主题浏览文章。适合快速找到算法、论文、项目和课程相关笔记。</p>
+				<p>按主题快速找到算法、论文、项目和站点记录。</p>
 			</section>
 			<section class="tag-cloud">
 				{
