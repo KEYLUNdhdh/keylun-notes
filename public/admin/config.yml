@@ -6,7 +6,6 @@ backend:
   auth_endpoint: /api/auth
 
 local_backend: true
-publish_mode: editorial_workflow
 media_folder: "public/uploads"
 public_folder: "/uploads"
 site_url: "https://keylun-notes.yexinnan20070127.workers.dev"
