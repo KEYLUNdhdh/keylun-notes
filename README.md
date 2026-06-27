@@ -1,139 +1,135 @@
-# Keylun Notes
+<div align = "center">
 
-Astro 个人技术博客，适合写算法笔记、论文阅读、课程项目和工程复盘。
+# Twilight
 
-## 本地开发
+A CMS integrated static blog template built with Astro framework.
 
-```bash
-npm install
-npm run dev
-```
+[**🖥️ Live Demo**](https://twilight.spr-aachen.com)
+[**📝 Documentation**](https://docs.twilight.spr-aachen.com/en)
 
-打开 `http://localhost:4321`。
+[![Bilibili](https://img.shields.io/badge/Bilibili-Intro-blue?logo=Bilibili)](https://space.bilibili.com/359461611/lists/6641229)&nbsp;
+[![YouTube](https://img.shields.io/badge/YouTube-Intro-red?logo=YouTube)](https://youtube.com/playlist?list=PLzjq8Hx1SRV7yqZQiACcCJmKPeg5D8JKe&si=Bcz2o0PF8MFvx8ec)
 
-## 写文章
+<table style="width: 100%; table-layout: fixed;">
+   <tr>
+      <td colspan="5"><img alt="Desktop" src="docs/image/Desktop.jpg" style="max-width: 100%;"></td>
+   </tr>
+   <tr>
+      <td><img alt="Mobile_4" src="docs/image/Mobile_4.jpg" style="max-width: 100%;"></td>
+      <td><img alt="Mobile_2" src="docs/image/Mobile_2.jpg" style="max-width: 100%;"></td>
+      <td><img alt="Mobile_1" src="docs/image/Mobile_1.jpg" style="max-width: 100%;"></td>
+      <td><img alt="Mobile_3" src="docs/image/Mobile_3.jpg" style="max-width: 100%;"></td>
+      <td><img alt="Mobile_5" src="docs/image/Mobile_5.jpg" style="max-width: 100%;"></td>
+   </tr>
+</table>
 
-文章放在 `src/content/blog/`，使用 Markdown 或 MDX。
+</div>
 
-```md
 ---
-title: "文章标题"
-description: "一句话摘要"
-pubDate: 2026-06-27
-tags: ["algorithm", "paper-reading"]
----
 
-正文内容。
-```
+<div align = "center">
 
-每篇文章的 `tags` 会自动生成：
+English | [**中文**](docs/README_ZH.md)
 
-- `/tags` 标签总览
-- `/tags/algorithm/` 这类单标签文章列表
-- 首页右侧标签云
+</div>
 
-## 管理后台
 
-后台入口：
+## ✨ Features
 
-```text
-/admin
-```
+### Content Management
+- **CMS Integration**: Headless CMS with OAuth for easy content management
+- **Pinned & Draft Posts**: Pin important posts or hide drafts in production
+- **Password-Protected Posts**: AES-encrypted articles with password access
+- **Automatic Navigation**: Auto-generated post navigation, archive, and TOC
+- **Data Visualization**: Visualized personal data like projects, skills, timeline
 
-当前配置使用 Decap CMS 的预览/本地模式，方便先看管理界面。它可以管理：
+### Content Pages
+- **Blog Posts**: Full-featured markdown blogging with tags and categories
+- **Projects & Skills Showcase**: Visual galleries for your portfolio
+- **Timeline**: Biography page with education, work, achievements, and skills
+- **Diary**: Short-form microblog-style posts with timestamps
+- **Albums**: Image gallery with Fancybox lightbox integration
+- **Friends Links**: Friend link exchange with icons and descriptions
+- **RSS & Atom Feeds**: Dedicated info pages with auto-generated XML feeds
 
-- `src/content/blog/*.md`：文章
-- `src/data/profile.json`：个人资料、头像、教育经历、联系方式
-- `public/uploads/`：后台上传的图片
+### Markdown Enhancements
+- **GitHub Repository Cards**: Embed live repo cards via `::github{repo="..."}`
+- **Music Cards**: Inline audio player with lyrics via `::music{...}`
+- **Admonitions / Callouts**: Note, tip, warning, and caution styled blocks
+- **Code Block Enhancements**: Copy button, collapse, line numbers, language badges
+- **Mermaid Diagrams**: Render ` ```mermaid ` code blocks as diagrams
+- **KaTeX Math Rendering**: LaTeX math expressions with `$...$` and `$$...$$`
 
-当前 `backend.name` 是 `github`，仓库指向 `KEYLUNdhdh/keylun-notes`。正式可写还需要给 Decap CMS 配 GitHub OAuth proxy。
+### UI Components
+- **Loading Overlay**: Configurable splash screen with spinner animation
+- **Sidebar Widget System**: Configurable profile, announcement, TOC, categories, tags, directory, statistics etc.
+- **Analytics Support**: Umami analytics integration for visitor insights
+- **Comment System**: Twikoo-powered comment functionality
+- **Music Player**: Background music with meting API or local playlist support
+- **PIO Widget**: Interactive Live2D character with customizable dialog
 
-已包含 Cloudflare Pages Functions OAuth proxy：
+### Visual Effects
+- **Smooth Transition Animations**: Polished page component transition animations
+- **Customizable Theme Colors**: Real-time customizable color schemes
+- **Dynamic Wallpaper System**: Carousel support with multiple display modes
+- **Immersive Particle Effects**: Highly customizable animated particles
+- **Custom Fonts**: Configurable web fonts via CSS links or local files
 
-- `/api/auth`
-- `/api/callback`
+### Compatibility
+- **Modern & Responsive Design**: Fully optimized for desktop and mobile devices
+- **Multilingual Capability**: 3 UI languages (en/zh/ja) & 12+ page translation languages
+- **Multiple Deployment Adapters**: Support Cloudflare, Netlify, Vercel, EdgeOne and other static hosting platforms
+- **Docker Support**: Ready-to-use Docker and docker-compose setup
 
-在 GitHub OAuth App 中使用：
 
-```text
-Homepage URL:
-https://keylun-notes.yexinnan20070127.workers.dev/admin/
+## 💻 Configuration
 
-Authorization callback URL:
-https://keylun-notes.yexinnan20070127.workers.dev/api/callback
-```
-
-然后在 Cloudflare 项目环境变量中添加：
-
-```text
-GITHUB_CLIENT_ID
-GITHUB_CLIENT_SECRET
-```
-
-`GITHUB_CLIENT_SECRET` 必须设为加密/Secret 变量，不要提交到仓库。
-
-如果想在本地让后台直接写入当前项目文件：
-
-1. 把 `public/admin/config.yml` 里的 backend 临时改成：
-
-   ```yml
-   backend:
-     name: git-gateway
-     branch: main
-   ```
-
-2. 在项目根目录启动 Decap Proxy：
-
+1. **Clone the repository:**
    ```bash
-   npx decap-server
+   git clone https://github.com/Spr-Aachen/Twilight.git
+   # Navigate to the project directory
+   cd Twilight
    ```
 
-3. 另一个终端启动 Astro：
-
+2. **Install dependencies:**
    ```bash
-   npm run dev
+   # Install pnpm if not already installed
+   npm install -g pnpm
+   # Install project dependencies
+   pnpm install
    ```
 
-Decap 官方说明：本地写入需要 `local_backend: true`，并从仓库根目录运行 `npx decap-server`。本地 proxy 只适合开发环境，不要暴露到公网。
+3. **Configure your blog:**
+   - [Customize blog settings](https://docs.twilight.spr-aachen.com/en/config/core) inside `twilight.config.yaml`
+   - [Manage site content](https://docs.twilight.spr-aachen.com/en/config/content) inside `src/content`
 
-正式上线前，请把 `public/admin/config.yml` 里的 backend 改成真实 GitHub 后端，例如：
+4. **Start the development server:**
+   ```bash
+   pnpm dev
+   ```
 
-```yml
-backend:
-  name: github
-  repo: your-github-username/your-repo
-  branch: main
-```
 
-然后用 GitHub OAuth、Cloudflare Access 或部署平台提供的身份认证保护 `/admin`。不要把 GitHub token 或管理员密码写进前端代码。
+## 🚀 Deployment
 
-## 常用命令
+Deploy your blog to any static hosting platform
 
-```bash
-npm run dev      # 本地预览
-npm run build    # 生产构建
-npm run preview  # 预览 dist
-```
 
-## 部署到 Cloudflare Pages
+## ⚡ Commands
 
-1. 把项目推到 GitHub。
-2. 在 Cloudflare Pages 新建项目并连接仓库。
-3. Framework preset 选择 `Astro`。
-4. Build command 填 `npm run build`。
-5. Output directory 填 `dist`。
-6. 环境变量可选填：`SITE=https://你的域名`。
+| Command                     | Action                        |
+|:----------------------------|:------------------------------|
+| ~~`pnpm lint`~~             | ~~Check and fix code issues~~ |
+| ~~`pnpm format`~~           | ~~Format code with Biome~~    |
+| `pnpm check`                | Run Astro error checking      |
+| `pnpm dev`                  | Start local dev server        |
+| `pnpm build`                | Build site to `./dist/`       |
+| `pnpm preview`              | Preview build locally         |
+| `pnpm astro ...`            | Run Astro CLI commands        |
+| `pnpm new-post <filename>`  | Create a new blog post        |
 
-## 部署到 GitHub Pages
 
-仓库 Settings -> Pages -> Source 选择 GitHub Actions。项目内已经带 `.github/workflows/deploy.yml`。
+## 🙏 Acknowledgements
 
-如果使用自定义域名，请把 `astro.config.mjs` 的 `SITE` 环境变量设置为正式域名，或者直接把默认值改成你的域名。
-
-## 上线前替换
-
-- `src/consts.ts`：站点名、描述、作者、GitHub 地址。
-- `public/avatar.png`：头像，可以直接替换为同名图片。
-- `src/data/profile.json`：个人资料、首页文案、教育经历和联系方式；也可以通过 `/admin` 修改。
-- `src/pages/projects.astro`：项目列表和链接。
-- `astro.config.mjs`：正式站点 URL，影响 sitemap、RSS 和 canonical URL。
+- Prototype   - [Fuwari](https://github.com/saicaca/fuwari)
+- Inspiration - [Yukina](https://github.com/WhitePaper233/yukina) & [Mizuki](https://github.com/matsuzaka-yuki/Mizuki)
+- Translation - [translate](https://gitee.com/mail_osc/translate)

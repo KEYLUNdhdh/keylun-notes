@@ -1,0 +1,14 @@
+{
+	"title": "Keylun Notes",
+	"description": "用于记录算法、AI4CO、论文阅读和项目复盘的个人博客。",
+	"image": "/assets/images/desktopWallpaper_1.jpg",
+	"category": "website",
+	"techStack": ["Astro", "Twilight", "Cloudflare Pages"],
+	"status": "in-progress",
+	"liveDemo": "https://keylun-notes.yexinnan20070127.workers.dev/",
+	"sourceCode": "https://github.com/KEYLUNdhdh/keylun-notes",
+	"startDate": "2026-06-27",
+	"endDate": "",
+	"featured": true,
+	"tags": ["Personal Blog", "Algorithms", "AI4CO"]
+}

@@ -1,21 +1,74 @@
-import { defineCollection } from 'astro:content';
-import { glob } from 'astro/loaders';
+import { defineCollection } from "astro:content";
 import { z } from 'astro/zod';
+import { glob } from 'astro/loaders';
 
-const blog = defineCollection({
-	// Load Markdown and MDX files in the `src/content/blog/` directory.
-	loader: glob({ base: './src/content/blog', pattern: '**/*.{md,mdx}' }),
-	// Type-check frontmatter using a schema
-	schema: ({ image }) =>
-		z.object({
-			title: z.string(),
-			description: z.string(),
-			tags: z.array(z.string()).default([]),
-			// Transform string to Date object
-			pubDate: z.coerce.date(),
-			updatedDate: z.coerce.date().optional(),
-			heroImage: z.optional(image()),
-		}),
+import { getCategoryPathParts } from "@utils/category";
+import { parseTags } from "@utils/tag";
+
+
+// Helper for handling dates that might be empty strings from JSON
+const dateSchema = z.preprocess((arg) => {
+    if (typeof arg === "string" && arg.trim() === "") return undefined;
+    return arg;
+}, z.coerce.date());
+const optionalDateSchema = z.preprocess((arg) => {
+    if (typeof arg === "string" && arg.trim() === "") return undefined;
+    return arg;
+}, z.coerce.date().optional());
+
+const categorySchema = z.preprocess((arg) => {
+    const parts = getCategoryPathParts(arg as any);
+    return parts ?? arg;
+}, z.union([z.string(), z.array(z.string())]).optional().nullable().default(""));
+
+const tagsSchema = z.preprocess((arg) => {
+    return parseTags(arg);
+}, z.array(z.string()).optional().default([]));
+
+const postsCollection = defineCollection({
+    loader: glob({ pattern: '**/[^_]*.{md,mdx}', base: "./src/content/posts" }),
+    schema: z.object({
+        title: z.string(),
+        published: dateSchema,
+        updated: optionalDateSchema,
+        description: z.string().optional().default(""),
+        cover: z.string().optional().default(""),
+        coverInContent: z.boolean().optional().default(false),
+        category: categorySchema,
+        tags: tagsSchema,
+        lang: z.string().optional().default(""),
+        pinned: z.boolean().optional().default(false),
+        author: z.string().optional().default(""),
+        sourceLink: z.string().optional().default(""),
+        licenseName: z.string().optional().default(""),
+        licenseUrl: z.string().optional().default(""),
+        comment: z.boolean().optional().default(true),
+        draft: z.boolean().optional().default(false),
+
+        /* Page encryption fields */
+        encrypted: z.boolean().optional().default(false),
+        password: z.string().optional().default(""),
+
+        /* Custom routeName */
+        routeName: z.string().optional(),
+
+        /* For internal use */
+        prevTitle: z.string().default(""),
+        prevSlug: z.string().default(""),
+        nextTitle: z.string().default(""),
+        nextSlug: z.string().default(""),
+    }),
 });
 
-export const collections = { blog };
+const specCollection = defineCollection({
+    loader: glob({ pattern: '[^_]*.{md,mdx}', base: "./src/content" }),
+    schema: z.object({
+        title: z.string().optional(),
+        description: z.string().optional(),
+    }),
+});
+
+export const collections = {
+    posts: postsCollection,
+    spec: specCollection,
+};

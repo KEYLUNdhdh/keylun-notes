@@ -1,11 +1,15 @@
-# build output
-dist/
-# generated types
-.astro/
-.wrangler/
+# editor config
+**/.vscode/
 
 # dependencies
 node_modules/
+
+# generated types
+.astro/
+.vercel/
+
+# build output
+dist/
 
 # logs
 npm-debug.log*
@@ -13,13 +17,5 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-
-# environment variables
+# private config
 .env
-.env.production
-
-# macOS-specific files
-.DS_Store
-
-# jetbrains setting folder
-.idea/

@@ -1,58 +1,35 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import Footer from '../components/Footer.astro';
-import Header from '../components/Header.astro';
-import profile from '../data/profile.json';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+export const prerender = true;
+
+
+import { getEntry, render } from "astro:content";
+
+import { LinkPresets } from "@constants/link-presets";
+import { LinkPreset } from "@/types/config";
+import Markdown from "@components/common/markdown.astro";
+import Comment from "@components/comment.astro";
+import GridLayout from "@layouts/grid.astro";
+import BackwardButton from "@components/backwardButton.astro";
+
+
+const aboutPost = await getEntry("spec", "about");
+if (!aboutPost) {
+    throw new Error("About page content not found");
+}
+const pageTitle = aboutPost.data.title || LinkPresets[LinkPreset.About].name;
+const pageDescription = aboutPost.data.description || LinkPresets[LinkPreset.About].description;
+
+const { Content, headings } = await render(aboutPost);
 ---
 
-<!doctype html>
-<html lang="zh-CN">
-	<head>
-		<BaseHead title={`关于 | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
-	</head>
-	<body>
-		<div class="wallpaper fullscreen-wallpaper"></div>
-		<div class="wallpaper banner-wallpaper compact"></div>
-		<Header />
-		<main class="single-column">
-			<section class="about-card card-base">
-				<img src={profile.avatar} alt="Profile Image" />
-				<div>
-					<p class="eyebrow">About</p>
-					<h1 data-i18n="page.about">关于我</h1>
-					<h2>{profile.name}</h2>
-					<p class="multiline" data-profile-i18n="about">{profile.aboutIntro}</p>
-					<div class="icon-links left">
-						{profile.links.map((link) => <a href={link.url} target="_blank" rel="noreferrer">{link.label}</a>)}
-					</div>
-				</div>
-			</section>
-			<section class="card-base content-section">
-				<h2 data-i18n="about.focus">当前关注</h2>
-				<ul class="focus-list">{profile.focus.map((item) => <li>{item}</li>)}</ul>
-			</section>
-			<section class="card-base content-section">
-				<h2 data-i18n="about.education">教育经历</h2>
-				<div class="education-list large">
-					{profile.education.map((item) => (
-						<article>
-							<div class="edu-mark">{item.mark}</div>
-							<div>
-								<h3>{item.school}</h3>
-								<p>{item.program}</p>
-								<time>{item.time}</time>
-								<p>{item.detail}</p>
-							</div>
-						</article>
-					))}
-				</div>
-			</section>
-			<section class="card-base content-section">
-				<h2 data-i18n="about.contact">联系方式</h2>
-				<p class="multiline" data-profile-i18n="contact">{profile.contact}</p>
-			</section>
-		</main>
-		<Footer />
-	</body>
-</html>
+<GridLayout title={pageTitle} description={pageDescription} headings={headings}>
+    <div class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32 mb-4">
+        <div class="card-base z-10 px-9 py-6 relative w-full ">
+            <BackwardButton currentPath={Astro.url.pathname} />
+            <Markdown class="mt-2">
+                <Content />
+            </Markdown>
+        </div>
+    </div>
+    <Comment path="/about/" />
+</GridLayout>

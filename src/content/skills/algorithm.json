@@ -1,0 +1,9 @@
+{
+	"name": "Algorithm",
+	"category": "AI",
+	"level": "intermediate",
+	"experience": "1 year",
+	"description": "算法模板、图上问题、数论和竞赛题复盘。",
+	"projects": ["Keylun Notes"],
+	"icon": "material-symbols:function"
+}
