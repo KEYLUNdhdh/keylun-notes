@@ -1,0 +1,119 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import Header from '../components/Header.astro';
+import { tagToSlug } from '../utils/posts';
+
+type Props = CollectionEntry<'blog'>['data'];
+
+const { title, description, tags, pubDate, updatedDate, heroImage } = Astro.props;
+---
+
+<html lang="zh-CN">
+	<head>
+		<BaseHead title={title} description={description} />
+		<style>
+			main {
+				width: calc(100% - 2em);
+				max-width: 100%;
+				margin: 0;
+			}
+			.hero-image {
+				width: 100%;
+			}
+			.hero-image img {
+				display: block;
+				margin: 0 auto;
+				border-radius: 12px;
+				box-shadow: var(--box-shadow);
+			}
+			.prose {
+				width: 720px;
+				max-width: calc(100% - 2em);
+				margin: auto;
+				padding: 1em;
+				color: rgb(var(--gray-dark));
+			}
+			.title {
+				margin-bottom: 1rem;
+				padding: 2rem 0 1rem;
+				line-height: 1.3;
+			}
+			.title h1 {
+				margin: 0 0 0.75rem;
+			}
+			.description {
+				margin: 0 0 1rem;
+				color: rgb(var(--gray));
+			}
+			.date {
+				margin-bottom: 0.5rem;
+				color: rgb(var(--gray));
+			}
+			.tags {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.5rem;
+				margin: 1rem 0;
+			}
+			.tags span,
+			.tags a {
+				padding: 0.2rem 0.55rem;
+				border: 1px solid rgb(var(--gray-light));
+				border-radius: 999px;
+				color: rgb(var(--gray));
+				font-size: 0.8rem;
+				text-decoration: none;
+			}
+			.tags a:hover {
+				border-color: var(--accent);
+				color: var(--accent);
+			}
+			.last-updated-on {
+				font-style: italic;
+			}
+		</style>
+	</head>
+
+	<body>
+		<Header />
+		<main>
+			<article>
+				<div class="hero-image">
+					{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
+				</div>
+				<div class="prose">
+					<div class="title">
+						<div class="date">
+							<FormattedDate date={pubDate} />
+							{
+								updatedDate && (
+									<div class="last-updated-on">
+										Last updated on <FormattedDate date={updatedDate} />
+									</div>
+								)
+							}
+						</div>
+						<h1>{title}</h1>
+						<p class="description">{description}</p>
+						{
+							tags.length > 0 && (
+								<div class="tags">
+									{tags.map((tag) => (
+										<a href={`/tags/${tagToSlug(tag)}/`}>{tag}</a>
+									))}
+								</div>
+							)
+						}
+						<hr />
+					</div>
+					<slot />
+				</div>
+			</article>
+		</main>
+		<Footer />
+	</body>
+</html>

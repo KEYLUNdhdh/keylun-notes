@@ -1,0 +1,24 @@
+{
+  "name": "Keylun",
+  "avatar": "/avatar.png",
+  "tagline": "愿每一次复盘，都能变成下一次更快抵达的路标。",
+  "heroTitle": "把算法、论文和项目做成可复用的长期笔记。",
+  "heroDescription": "记录算法工程、AI optimization、论文阅读、课程笔记和项目复盘。每篇文章都尽量留下推导过程、实验细节和可复用结论。",
+  "aboutIntro": "这里可以写你的教育背景、研究兴趣、技术栈和联系方式。建议保持简洁，把重点放在你希望别人记住的方向上。",
+  "focus": [
+    "算法工程与复杂问题求解",
+    "AI optimization / learning-augmented optimization",
+    "论文阅读、复现和实验记录",
+    "课程项目与可展示的工程作品"
+  ],
+  "education": [
+    {
+      "mark": "CS",
+      "school": "你的学校名称",
+      "program": "计算机科学 / 网络空间安全 / 人工智能方向",
+      "time": "2025 - Present",
+      "detail": "可以在这里写学院、专业、GPA、奖项或研究兴趣。上线前替换成你的真实信息。"
+    }
+  ],
+  "contact": "把邮箱、GitHub、Google Scholar、个人简历等链接放在这里。上线前记得在 src/consts.ts 中替换站点名和 GitHub 地址。"
+}

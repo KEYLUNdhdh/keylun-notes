@@ -1,0 +1,74 @@
+---
+import { SITE_TITLE } from '../consts';
+import HeaderLink from './HeaderLink.astro';
+---
+
+<header>
+	<nav>
+		<h2><a href="/">{SITE_TITLE}</a></h2>
+		<div class="internal-links">
+			<HeaderLink href="/">首页</HeaderLink>
+			<HeaderLink href="/blog">文章</HeaderLink>
+			<HeaderLink href="/tags">标签</HeaderLink>
+			<HeaderLink href="/projects">项目</HeaderLink>
+			<HeaderLink href="/about">关于</HeaderLink>
+		</div>
+	</nav>
+</header>
+<style>
+	header {
+		margin: 0;
+		padding: 0 1rem;
+		background: rgba(255, 255, 255, 0.9);
+		border-bottom: 1px solid rgb(var(--gray-light));
+		backdrop-filter: blur(16px);
+		position: sticky;
+		top: 0;
+		z-index: 10;
+	}
+	h2 {
+		margin: 0;
+		font-size: 1em;
+	}
+
+	h2 a,
+	h2 a.active {
+		text-decoration: none;
+	}
+	nav {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		max-width: 1040px;
+		margin: 0 auto;
+	}
+	nav a {
+		display: inline-block;
+		padding: 1rem 0.5rem;
+		color: var(--black);
+		border-bottom: 3px solid transparent;
+		text-decoration: none;
+	}
+	nav a.active {
+		text-decoration: none;
+		border-bottom-color: var(--accent);
+	}
+	.internal-links {
+		display: flex;
+		gap: 0.25rem;
+	}
+	@media (max-width: 720px) {
+		nav {
+			align-items: flex-start;
+			flex-direction: column;
+			padding: 0.75rem 0;
+		}
+		nav a {
+			padding: 0.25rem 0.5rem 0.5rem 0;
+		}
+		.internal-links {
+			flex-wrap: wrap;
+		}
+	}
+</style>

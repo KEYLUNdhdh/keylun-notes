@@ -1,0 +1,57 @@
+backend:
+  name: github
+  repo: KEYLUNdhdh/keylun-notes
+  branch: main
+
+local_backend: true
+publish_mode: editorial_workflow
+media_folder: "public/uploads"
+public_folder: "/uploads"
+logo_url: "/avatar.png"
+locale: "zh_Hans"
+
+collections:
+  - name: "blog"
+    label: "文章"
+    label_singular: "文章"
+    folder: "src/content/blog"
+    create: true
+    delete: true
+    extension: "md"
+    format: "frontmatter"
+    slug: "{{slug}}"
+    summary: "{{title}} - {{pubDate}}"
+    fields:
+      - { label: "标题", name: "title", widget: "string" }
+      - { label: "摘要", name: "description", widget: "text" }
+      - { label: "发布日期", name: "pubDate", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+      - { label: "更新日期", name: "updatedDate", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD", required: false }
+      - { label: "标签", name: "tags", widget: "list", default: ["notes"], allow_add: true }
+      - { label: "封面图", name: "heroImage", widget: "image", required: false }
+      - { label: "正文", name: "body", widget: "markdown" }
+
+  - name: "settings"
+    label: "网站资料"
+    files:
+      - name: "profile"
+        label: "个人资料"
+        file: "src/data/profile.json"
+        format: "json"
+        fields:
+          - { label: "名称", name: "name", widget: "string" }
+          - { label: "头像", name: "avatar", widget: "image", default: "/avatar.png", hint: "上传新头像后会保存到 public/uploads，并自动更新首页和关于页使用的头像。" }
+          - { label: "个人签名", name: "tagline", widget: "text" }
+          - { label: "首页标题", name: "heroTitle", widget: "string" }
+          - { label: "首页个人介绍", name: "heroDescription", widget: "text", hint: "显示在首页头像旁边，用来概括你的博客方向和个人定位。" }
+          - { label: "关于页个人介绍", name: "aboutIntro", widget: "text", hint: "显示在 /about 页面顶部，可以写教育背景、研究兴趣、技术栈和联系方式。" }
+          - { label: "当前关注", name: "focus", widget: "list", field: { label: "方向", name: "item", widget: "string" } }
+          - label: "教育经历"
+            name: "education"
+            widget: "list"
+            fields:
+              - { label: "标识", name: "mark", widget: "string", default: "CS" }
+              - { label: "学校", name: "school", widget: "string" }
+              - { label: "专业/学院", name: "program", widget: "string" }
+              - { label: "时间", name: "time", widget: "string" }
+              - { label: "说明", name: "detail", widget: "text" }
+          - { label: "联系方式", name: "contact", widget: "text" }

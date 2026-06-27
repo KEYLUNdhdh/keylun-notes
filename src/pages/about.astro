@@ -1,0 +1,56 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import profile from '../data/profile.json';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+---
+
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<BaseHead title={`关于 | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section class="page-heading">
+				<p class="eyebrow">About</p>
+				<h1>关于我</h1>
+				<p>{profile.aboutIntro}</p>
+			</section>
+
+			<section class="content-block">
+				<h2>当前关注</h2>
+				<ul>
+					{profile.focus.map((item) => <li>{item}</li>)}
+				</ul>
+			</section>
+
+			<section class="content-block">
+				<h2>教育经历</h2>
+				<div class="education-list">
+					{
+						profile.education.map((item) => (
+							<article>
+								<div class="edu-mark">{item.mark}</div>
+								<div>
+									<h3>{item.school}</h3>
+									<p>{item.program}</p>
+									<time>{item.time}</time>
+									<p>{item.detail}</p>
+								</div>
+							</article>
+						))
+					}
+				</div>
+			</section>
+
+			<section class="content-block">
+				<h2>联系</h2>
+				<p>{profile.contact}</p>
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>
