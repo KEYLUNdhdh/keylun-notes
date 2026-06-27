@@ -1,24 +1,30 @@
 {
-  "contact": "把邮箱、GitHub、Google Scholar、个人简历等链接放在这里。上线前记得在 src/consts.ts 中替换站点名和 GitHub 地址。",
-  "heroDescription": "记录算法工程、AI optimization、论文阅读、课程笔记和项目复盘。每篇文章都尽量留下推导过程、实验细节和可复用结论。",
+  "contact": "把邮箱、GitHub、Google Scholar、个人简历等链接放在这里。上线前记得在 src/consts.ts 中替换站点名和 GitHub 地址。\n我的 Gmail 邮箱：yexinnan20070127@gmail.com\n我的 Github 页面：https://github.com/KEYLUNdhdh",
+  "heroDescription": "你好哇，欢迎来到我的博客，这里将记录我的点点滴滴。",
   "education": [
     {
       "mark": "CS",
-      "school": "你的学校名称",
-      "program": "计算机科学 / 网络空间安全 / 人工智能方向",
-      "time": "2025 - Present",
-      "detail": "可以在这里写学院、专业、GPA、奖项或研究兴趣。上线前替换成你的真实信息。"
+      "school": "电子科技大学（ University of Electronic Science and Technology of China）",
+      "program": "计算机科学与技术（珠峰计划）",
+      "time": "2026.3 - ",
+      "detail": "我于大一寒假参与了 UESTC 的珠峰计划纳新，并成功成为珠峰计划的一员。在这里，我希望借助新的平台去实现自己的目标。"
+    },
+    {
+      "mark": "CS",
+      "school": "电子科技大学（ University of Electronic Science and Technology of China）",
+      "program": "计算机科学与技术（人工智能+）",
+      "time": "2025.9 - 2026.3",
+      "detail": "梦开始的地方。"
     }
   ],
-  "name": "Keylun",
-  "tagline": "愿每一次复盘，都能变成下一次更快抵达的路标。",
+  "name": "KEYLUN",
+  "tagline": "传奇不是一夜铸就的。\n我希望在 AI 时代走出自己的道路。",
   "focus": [
-    "算法工程与复杂问题求解",
-    "AI optimization / learning-augmented optimization",
-    "论文阅读、复现和实验记录",
-    "课程项目与可展示的工程作品"
+    "AI4CO",
+    "ACM/ICPC/CCPC",
+    "图上问题"
   ],
   "avatar": "https://pic1.zhimg.com/v2-b023b6791df74d46c91903adf8b74eaa_xll.jpg?source=32738c0c&needBackground=1",
   "heroTitle": "算法的世界是美丽的",
-  "aboutIntro": "这里可以写你的教育背景、研究兴趣、技术栈和联系方式。建议保持简洁，把重点放在你希望别人记住的方向上。"
+  "aboutIntro": "我是 UESTC 25级的一名本科生。\n我喜欢钻研算法方面的技术，同时我也对 AI4CO 具有浓厚兴趣。\n我于大一下学期初加入了周毅老师领导的算法工程小组，隶属于学校的 Algorithm and Logic group。\n未来希望能够参与到 AI agent，具身智能等方面的顶层优化工作。"
 }
