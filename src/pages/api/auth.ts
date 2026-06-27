@@ -1,16 +1,8 @@
 export const prerender = false;
 
-function getEnv(context) {
-	return (
-		context.locals?.runtime?.env ??
-		context.locals?.cloudflare?.env ??
-		context.env ??
-		{}
-	);
-}
+import { env } from 'cloudflare:workers';
 
 export async function GET(context) {
-	const env = getEnv(context);
 	const clientId = env.GITHUB_CLIENT_ID;
 
 	if (!clientId) {

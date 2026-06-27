@@ -1,13 +1,6 @@
 export const prerender = false;
 
-function getEnv(context) {
-	return (
-		context.locals?.runtime?.env ??
-		context.locals?.cloudflare?.env ??
-		context.env ??
-		{}
-	);
-}
+import { env } from 'cloudflare:workers';
 
 function renderBody(status: 'success' | 'error', content: unknown) {
 	const payload = `authorization:github:${status}:${JSON.stringify(content)}`;
@@ -29,7 +22,6 @@ function renderBody(status: 'success' | 'error', content: unknown) {
 }
 
 export async function GET(context) {
-	const env = getEnv(context);
 	const clientId = env.GITHUB_CLIENT_ID;
 	const clientSecret = env.GITHUB_CLIENT_SECRET;
 

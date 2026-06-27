@@ -1,16 +1,8 @@
 export const prerender = false;
 
-function getEnv(context) {
-	return (
-		context.locals?.runtime?.env ??
-		context.locals?.cloudflare?.env ??
-		context.env ??
-		{}
-	);
-}
+import { env } from 'cloudflare:workers';
 
-export function GET(context) {
-	const env = getEnv(context);
+export function GET() {
 	return Response.json({
 		hasClientId: Boolean(env.GITHUB_CLIENT_ID),
 		hasClientSecret: Boolean(env.GITHUB_CLIENT_SECRET),
