@@ -24,13 +24,13 @@
     "ACM/ICPC/CCPC",
     "图上问题"
   ],
-  "avatar": "https://pic1.zhimg.com/v2-b023b6791df74d46c91903adf8b74eaa_xll.jpg?source=32738c0c&needBackground=1",
-  "heroTitle": "算法的世界是美丽的",
-  "aboutIntro": "我是 UESTC 25级的一名本科生。\n我喜欢钻研算法方面的技术，同时我也对 AI4CO 具有浓厚兴趣。\n我于大一下学期初加入了周毅老师领导的算法工程小组，隶属于学校的 Algorithm and Logic group。\n未来希望能够参与到 AI agent，具身智能等方面的顶层优化工作。",
+  "avatar": "public/uploads/b07b10cecba14e08d0010256b0a2bfedb347d4f3.jpg",
   "links": [
     {
       "label": "GitHub",
       "url": "https://github.com/KEYLUNdhdh"
     }
-  ]
+  ],
+  "heroTitle": "算法的世界是美丽的",
+  "aboutIntro": "我是 UESTC 25级的一名本科生。\n我喜欢钻研算法方面的技术，同时我也对 AI4CO 具有浓厚兴趣。\n我于大一下学期初加入了周毅老师领导的算法工程小组，隶属于学校的 Algorithm and Logic group。\n未来希望能够参与到 AI agent，具身智能等方面的顶层优化工作。"
 }
