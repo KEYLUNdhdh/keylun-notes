@@ -1,11 +1,14 @@
-export async function onRequest({ request, env }) {
+export const prerender = false;
+
+export async function GET(context) {
+	const env = context.locals.runtime?.env ?? {};
 	const clientId = env.GITHUB_CLIENT_ID;
 
 	if (!clientId) {
 		return new Response('Missing GITHUB_CLIENT_ID', { status: 500 });
 	}
 
-	const url = new URL(request.url);
+	const url = new URL(context.request.url);
 	const redirectUrl = new URL('https://github.com/login/oauth/authorize');
 	redirectUrl.searchParams.set('client_id', clientId);
 	redirectUrl.searchParams.set('redirect_uri', `${url.origin}/api/callback`);

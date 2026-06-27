@@ -1,14 +1,14 @@
-function renderBody(status, content) {
+export const prerender = false;
+
+function renderBody(status: 'success' | 'error', content: unknown) {
+	const payload = `authorization:github:${status}:${JSON.stringify(content)}`;
 	return `
 		<!doctype html>
 		<html>
 			<body>
 				<script>
 					const receiveMessage = (message) => {
-						window.opener.postMessage(
-							'authorization:github:${status}:${JSON.stringify(content)}',
-							message.origin
-						);
+						window.opener.postMessage(${JSON.stringify(payload)}, message.origin);
 						window.removeEventListener('message', receiveMessage, false);
 					};
 					window.addEventListener('message', receiveMessage, false);
@@ -19,7 +19,8 @@ function renderBody(status, content) {
 	`;
 }
 
-export async function onRequest({ request, env }) {
+export async function GET(context) {
+	const env = context.locals.runtime?.env ?? {};
 	const clientId = env.GITHUB_CLIENT_ID;
 	const clientSecret = env.GITHUB_CLIENT_SECRET;
 
@@ -27,7 +28,7 @@ export async function onRequest({ request, env }) {
 		return new Response('Missing GitHub OAuth environment variables', { status: 500 });
 	}
 
-	const url = new URL(request.url);
+	const url = new URL(context.request.url);
 	const code = url.searchParams.get('code');
 
 	if (!code) {
