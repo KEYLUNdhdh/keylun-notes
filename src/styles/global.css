@@ -328,6 +328,9 @@ hr {
 	padding: 1.25rem 0;
 	border-top: 1px solid rgb(var(--gray-light));
 }
+.multiline {
+	white-space: pre-line;
+}
 .tag-cloud {
 	display: flex;
 	flex-wrap: wrap;

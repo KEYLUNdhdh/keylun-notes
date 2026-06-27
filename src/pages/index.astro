@@ -30,7 +30,7 @@ const categories = [
 				<div class="hero-copy">
 					<p class="eyebrow">Personal technical blog</p>
 					<h1>{profile.heroTitle}</h1>
-					<p class="intro">{profile.heroDescription}</p>
+					<p class="intro multiline">{profile.heroDescription}</p>
 					<div class="actions">
 						<a class="button primary" href="/blog">阅读文章</a>
 						<a class="button" href="/tags">按标签浏览</a>
@@ -71,7 +71,7 @@ const categories = [
 					<section class="side-card identity-card">
 						<img src={profile.avatar} alt="博客头像" width="132" height="132" />
 						<h2>{profile.name}</h2>
-						<p>{profile.tagline}</p>
+						<p class="multiline">{profile.tagline}</p>
 					</section>
 
 					<section class="side-card">

@@ -17,7 +17,7 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 			<section class="page-heading">
 				<p class="eyebrow">About</p>
 				<h1>关于我</h1>
-				<p>{profile.aboutIntro}</p>
+				<p class="multiline">{profile.aboutIntro}</p>
 			</section>
 
 			<section class="content-block">
@@ -48,7 +48,7 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 
 			<section class="content-block">
 				<h2>联系</h2>
-				<p>{profile.contact}</p>
+				<p class="multiline">{profile.contact}</p>
 				{
 					profile.links.length > 0 && (
 						<div class="profile-links">
