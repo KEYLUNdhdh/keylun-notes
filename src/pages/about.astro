@@ -12,50 +12,45 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 		<BaseHead title={`关于 | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
-		<div class="site-bg"></div>
+		<div class="wallpaper fullscreen-wallpaper"></div>
+		<div class="wallpaper banner-wallpaper compact"></div>
 		<Header />
-		<main>
-			<section class="about-hero glass-panel">
-				<img src={profile.avatar} alt="博客头像" width="150" height="150" />
+		<main class="single-column">
+			<section class="about-card card-base">
+				<img src={profile.avatar} alt="Profile Image" />
 				<div>
-					<p class="eyebrow">关于我</p>
-					<h1>{profile.name}</h1>
-					<p class="multiline">{profile.aboutIntro}</p>
-					<div class="profile-links">
+					<p class="eyebrow">About</p>
+					<h1 data-i18n="page.about">关于我</h1>
+					<h2>{profile.name}</h2>
+					<p class="multiline" data-profile-i18n="about">{profile.aboutIntro}</p>
+					<div class="icon-links left">
 						{profile.links.map((link) => <a href={link.url} target="_blank" rel="noreferrer">{link.label}</a>)}
 					</div>
 				</div>
 			</section>
-
-			<section class="content-block glass-panel">
-				<h2>当前关注</h2>
-				<ul class="focus-list">
-					{profile.focus.map((item) => <li>{item}</li>)}
-				</ul>
+			<section class="card-base content-section">
+				<h2 data-i18n="about.focus">当前关注</h2>
+				<ul class="focus-list">{profile.focus.map((item) => <li>{item}</li>)}</ul>
 			</section>
-
-			<section class="content-block glass-panel">
-				<h2>教育经历</h2>
+			<section class="card-base content-section">
+				<h2 data-i18n="about.education">教育经历</h2>
 				<div class="education-list large">
-					{
-						profile.education.map((item) => (
-							<article>
-								<div class="edu-mark">{item.mark}</div>
-								<div>
-									<h3>{item.school}</h3>
-									<p>{item.program}</p>
-									<time>{item.time}</time>
-									<p class="multiline">{item.detail}</p>
-								</div>
-							</article>
-						))
-					}
+					{profile.education.map((item) => (
+						<article>
+							<div class="edu-mark">{item.mark}</div>
+							<div>
+								<h3>{item.school}</h3>
+								<p>{item.program}</p>
+								<time>{item.time}</time>
+								<p>{item.detail}</p>
+							</div>
+						</article>
+					))}
 				</div>
 			</section>
-
-			<section class="content-block glass-panel">
-				<h2>联系方式</h2>
-				<p class="multiline">{profile.contact}</p>
+			<section class="card-base content-section">
+				<h2 data-i18n="about.contact">联系方式</h2>
+				<p class="multiline" data-profile-i18n="contact">{profile.contact}</p>
 			</section>
 		</main>
 		<Footer />

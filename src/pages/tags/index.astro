@@ -6,8 +6,7 @@ import Header from '../../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 import { getTagCounts, tagToSlug } from '../../utils/posts';
 
-const posts = await getCollection('blog');
-const tags = getTagCounts(posts);
+const tags = getTagCounts(await getCollection('blog'));
 ---
 
 <!doctype html>
@@ -16,23 +15,17 @@ const tags = getTagCounts(posts);
 		<BaseHead title={`标签 | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
-		<div class="site-bg"></div>
+		<div class="wallpaper fullscreen-wallpaper"></div>
+		<div class="wallpaper banner-wallpaper compact"></div>
 		<Header />
-		<main>
-			<section class="page-heading glass-panel">
-				<p class="eyebrow">主题索引</p>
-				<h1>标签</h1>
-				<p>按主题快速找到算法、论文、项目和站点记录。</p>
+		<main class="single-column">
+			<section class="page-title card-base">
+				<p class="eyebrow">Tags</p>
+				<h1 data-i18n="page.tags">标签</h1>
+				<p data-i18n="page.tagsDesc">按主题快速找到算法、论文、项目和站点记录。</p>
 			</section>
-			<section class="tag-cloud">
-				{
-					tags.map(([tag, count]) => (
-						<a href={`/tags/${tagToSlug(tag)}/`}>
-							<span>{tag}</span>
-							<strong>{count}</strong>
-						</a>
-					))
-				}
+			<section class="card-base tag-page-cloud">
+				{tags.map(([tag, count]) => <a href={`/tags/${tagToSlug(tag)}/`}><span>{tag}</span><strong>{count}</strong></a>)}
 			</section>
 		</main>
 		<Footer />

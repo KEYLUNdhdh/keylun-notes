@@ -9,7 +9,6 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 import { getTagCounts, sortPosts, tagToSlug } from '../utils/posts';
 
 const posts = sortPosts(await getCollection('blog'));
-const latestPosts = posts.slice(0, 5);
 const tags = getTagCounts(posts);
 const categories = [
 	['算法笔记', posts.filter((post) => post.data.tags.includes('algorithm')).length],
@@ -17,6 +16,7 @@ const categories = [
 	['项目复盘', posts.filter((post) => post.data.tags.includes('project')).length],
 	['站点记录', posts.filter((post) => post.data.tags.includes('meta')).length],
 ].filter(([, count]) => Number(count) > 0);
+const wordCount = posts.reduce((sum, post) => sum + (post.body?.length ?? 0), 0);
 ---
 
 <!doctype html>
@@ -25,119 +25,105 @@ const categories = [
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
-		<div class="site-bg"></div>
+		<div class="wallpaper fullscreen-wallpaper"></div>
+		<div class="wallpaper banner-wallpaper"></div>
 		<Header />
-		<section class="twilight-banner">
-			<div class="banner-shade"></div>
-			<div class="banner-content">
-				<p class="eyebrow">Keylun 的个人博客</p>
-				<h1>{profile.heroTitle}</h1>
-				<p class="intro multiline">{profile.heroDescription}</p>
-				<div class="actions">
-					<a class="button primary" href="/blog">阅读文章</a>
-					<a class="button" href="/about">关于我</a>
-				</div>
+		<section class="hero-banner">
+			<div class="hero-inner">
+				<h1 data-i18n="home.title">{profile.heroTitle}</h1>
+				<p class="subtitle" data-i18n="home.description">{profile.heroDescription}</p>
 			</div>
 		</section>
-
-		<main class="home-shell">
-			<div class="home-grid">
-				<section class="feed">
-					<div class="section-title">
-						<div>
-							<p class="eyebrow">最近更新</p>
-							<h2>最新文章</h2>
-						</div>
-						<a href="/blog">全部文章</a>
-					</div>
-					<div class="article-list">
-						{
-							latestPosts.map((post) => (
-								<a class="article-row" href={`/blog/${post.id}/`}>
-									<div class="article-main">
-										<p class="date">
-											<FormattedDate date={post.data.pubDate} />
-										</p>
-										<h3>{post.data.title}</h3>
-										<p>{post.data.description}</p>
-										<div class="tags">
-											{post.data.tags.map((tag) => (
-												<span>{tag}</span>
-											))}
-										</div>
-									</div>
-								</a>
-							))
-						}
+		<main class="tw-layout">
+			<aside class="tw-sidebar left-sidebar">
+				<section class="card-base profile-card">
+					<a href="/about/" class="profile-image-link">
+						<img src={profile.avatar} alt="Profile Image" />
+					</a>
+					<h2>{profile.name}</h2>
+					<div class="primary-line"></div>
+					<p class="multiline" data-profile-i18n="tagline">{profile.tagline}</p>
+					<div class="icon-links">
+						{profile.links.map((link) => <a href={link.url} target="_blank" rel="noreferrer">{link.label}</a>)}
 					</div>
 				</section>
+				<section class="card-base widget">
+					<h2 data-i18n="side.announcement">公告</h2>
+					<p data-i18n="side.announcementText">欢迎来到我的博客。</p>
+					<a class="button-link" href="/about/" data-i18n="home.more">了解更多</a>
+				</section>
+				<section class="card-base widget">
+					<h2 data-i18n="side.categories">分类</h2>
+					<div class="category-list">
+						{categories.map(([name, count]) => <a href="/blog/"><span>{name}</span><strong>{count}</strong></a>)}
+					</div>
+				</section>
+			</aside>
 
-				<aside class="profile-sidebar" aria-label="个人信息">
-					<section class="side-card identity-card">
-						<a href="/about" aria-label="查看关于我">
-							<img src={profile.avatar} alt="博客头像" width="160" height="160" />
-						</a>
-						<h2>{profile.name}</h2>
-						<div class="accent-line"></div>
-						<p class="multiline">{profile.tagline}</p>
-						<div class="profile-links compact">
-							{profile.links.map((link) => <a href={link.url} target="_blank" rel="noreferrer">{link.label}</a>)}
-						</div>
-					</section>
-
-					<section class="side-card">
-						<div class="side-title">
-							<h2>分类</h2>
-							<a href="/blog">更多</a>
-						</div>
-						<div class="category-list">
-							{
-								categories.map(([name, count]) => (
-									<div>
-										<span>{name}</span>
-										<strong>{count}</strong>
+			<section class="tw-content">
+				<div class="content-heading card-base">
+					<p class="eyebrow" data-i18n="home.eyebrow">Keylun 的个人博客</p>
+					<h2 data-i18n="home.latest">最新文章</h2>
+					<a href="/blog/" data-i18n="home.allPosts">全部文章</a>
+				</div>
+				<div class="post-list">
+					{
+						posts.map((post) => (
+							<article class="post-card card-base">
+								<div class="post-card-main">
+									<a class="post-title" href={`/blog/${post.id}/`}>{post.data.title}</a>
+									<div class="post-meta">
+										<FormattedDate date={post.data.pubDate} />
+										<span>/</span>
+										<span>{post.data.tags[0] ?? 'notes'}</span>
 									</div>
-								))
-							}
-						</div>
-					</section>
+									<p>{post.data.description}</p>
+									<div class="post-stats">
+										<span>{post.body?.length ?? 0} <span data-i18n="post.words">字</span></span>
+										<span>|</span>
+										<span>{Math.max(1, Math.ceil((post.body?.length ?? 0) / 500))} <span data-i18n="post.minute">分钟</span></span>
+									</div>
+								</div>
+								<a class="post-cover" href={`/blog/${post.id}/`} aria-label={post.data.title}>
+									<span>{post.data.tags.slice(0, 3).join(' / ') || 'No Tags'}</span>
+								</a>
+							</article>
+						))
+					}
+				</div>
+			</section>
 
-					<section class="side-card">
-						<div class="side-title">
-							<h2>标签</h2>
-							<a href="/tags">全部</a>
-						</div>
-						<div class="tag-cloud compact">
-							{
-								tags.map(([tag, count]) => (
-									<a href={`/tags/${tagToSlug(tag)}/`}>
-										<span>{tag}</span>
-										<strong>{count}</strong>
-									</a>
-								))
-							}
-						</div>
-					</section>
-
-					<section class="side-card">
-						<h2>教育经历</h2>
-						<div class="education-list">
-							{
-								profile.education.map((item) => (
-									<article>
-										<div class="edu-mark">{item.mark}</div>
-										<div>
-											<h3>{item.school}</h3>
-											<p>{item.program}</p>
-											<time>{item.time}</time>
-										</div>
-									</article>
-								))
-							}
-						</div>
-					</section>
-				</aside>
-			</div>
+			<aside class="tw-sidebar right-sidebar">
+				<section class="card-base widget">
+					<h2 data-i18n="side.tags">标签</h2>
+					<div class="tag-cloud compact">
+						{tags.map(([tag, count]) => <a href={`/tags/${tagToSlug(tag)}/`}><span>{tag}</span><strong>{count}</strong></a>)}
+					</div>
+				</section>
+				<section class="card-base widget">
+					<h2 data-i18n="side.statistics">统计</h2>
+					<div class="stats-grid">
+						<div><strong>{posts.length}</strong><span>posts</span></div>
+						<div><strong>{tags.length}</strong><span>tags</span></div>
+						<div><strong>{wordCount}</strong><span>chars</span></div>
+					</div>
+				</section>
+				<section class="card-base widget">
+					<h2 data-i18n="side.education">教育经历</h2>
+					<div class="education-list">
+						{profile.education.map((item) => (
+							<article>
+								<div class="edu-mark">{item.mark}</div>
+								<div>
+									<h3>{item.school}</h3>
+									<p>{item.program}</p>
+									<time>{item.time}</time>
+								</div>
+							</article>
+						))}
+					</div>
+				</section>
+			</aside>
 		</main>
 		<Footer />
 	</body>

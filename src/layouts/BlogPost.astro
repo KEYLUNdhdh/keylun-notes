@@ -16,41 +16,23 @@ const { title, description, tags, pubDate, updatedDate, heroImage } = Astro.prop
 	<head>
 		<BaseHead title={title} description={description} />
 	</head>
-
 	<body>
-		<div class="site-bg"></div>
+		<div class="wallpaper fullscreen-wallpaper"></div>
+		<div class="wallpaper banner-wallpaper compact"></div>
 		<Header />
 		<main class="post-shell">
-			<article class="post-article glass-panel">
-				{
-					heroImage && (
-						<div class="hero-image">
-							<Image width={1020} height={510} src={heroImage} alt="" />
-						</div>
-					)
-				}
-				<header class="post-title">
-					<div class="date">
+			<article class="post-article card-base">
+				{heroImage && <div class="hero-image"><Image width={1020} height={510} src={heroImage} alt="" /></div>}
+				<header class="post-page-title">
+					<div class="post-meta">
 						<FormattedDate date={pubDate} />
-						{
-							updatedDate && (
-								<div class="last-updated-on">
-									最后更新于 <FormattedDate date={updatedDate} />
-								</div>
-							)
-						}
+						{updatedDate && <><span>/</span><span data-i18n="post.updated">最后更新于</span><FormattedDate date={updatedDate} /></>}
 					</div>
 					<h1>{title}</h1>
-					<p class="description">{description}</p>
-					{
-						tags.length > 0 && (
-							<div class="tags">
-								{tags.map((tag) => (
-									<a href={`/tags/${tagToSlug(tag)}/`}>{tag}</a>
-								))}
-							</div>
-						)
-					}
+					<p>{description}</p>
+					<div class="tags">
+						{tags.map((tag) => <a href={`/tags/${tagToSlug(tag)}/`}>{tag}</a>)}
+					</div>
 				</header>
 				<div class="prose">
 					<slot />

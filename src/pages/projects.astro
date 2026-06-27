@@ -5,55 +5,36 @@ import Header from '../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 
 const projects = [
-	{
-		name: 'Mini-AlexNet CIFAR-10 Demo',
-		description: '从模型结构、训练设置到实验结果的课程项目记录模板。',
-		tags: ['深度学习', 'PyTorch', '课程项目'],
-		link: '#',
-	},
-	{
-		name: 'AI4CO Baseline Notes',
-		description: '组合优化问题、baseline、评价指标和复现实验的整理入口。',
-		tags: ['组合优化', '研究记录', 'Benchmark'],
-		link: '#',
-	},
-	{
-		name: 'Algorithm Notebook',
-		description: '常用算法模板、证明要点和题目复盘的长期索引。',
-		tags: ['算法', 'C++', '笔记'],
-		link: '#',
-	},
+	{ name: 'Mini-AlexNet CIFAR-10 Demo', description: '从模型结构、训练设置到实验结果的课程项目记录模板。', tags: ['深度学习', 'PyTorch', '课程项目'] },
+	{ name: 'AI4CO Baseline Notes', description: '组合优化问题、baseline、评价指标和复现实验的整理入口。', tags: ['组合优化', '研究记录', 'Benchmark'] },
+	{ name: 'Algorithm Notebook', description: '常用算法模板、证明要点和题目复盘的长期索引。', tags: ['算法', 'C++', '笔记'] },
 ];
 ---
 
 <!doctype html>
 <html lang="zh-CN">
 	<head>
-		<BaseHead title={`项目 | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+		<BaseHead title={`展示 | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
-		<div class="site-bg"></div>
+		<div class="wallpaper fullscreen-wallpaper"></div>
+		<div class="wallpaper banner-wallpaper compact"></div>
 		<Header />
-		<main>
-			<section class="page-heading glass-panel">
-				<p class="eyebrow">项目索引</p>
-				<h1>项目</h1>
-				<p>把 README 之外的设计动机、实验过程、踩坑记录和结果分析放在这里。</p>
+		<main class="single-column">
+			<section class="page-title card-base">
+				<p class="eyebrow">Exhibition</p>
+				<h1 data-i18n="page.projects">展示</h1>
+				<p data-i18n="page.projectsDesc">这里记录项目、实验和阶段性成果。</p>
 			</section>
 			<section class="project-grid">
-				{
-					projects.map((project) => (
-						<a class="project-card" href={project.link}>
-							<h2>{project.name}</h2>
-							<p>{project.description}</p>
-							<div class="tags">
-								{project.tags.map((tag) => (
-									<span>{tag}</span>
-								))}
-							</div>
-						</a>
-					))
-				}
+				{projects.map((project) => (
+					<article class="project-card card-base">
+						<div class="project-cover">{project.tags[0]}</div>
+						<h2>{project.name}</h2>
+						<p>{project.description}</p>
+						<div class="tags">{project.tags.map((tag) => <span>{tag}</span>)}</div>
+					</article>
+				))}
 			</section>
 		</main>
 		<Footer />

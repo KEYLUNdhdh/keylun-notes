@@ -1,39 +1,12 @@
 ---
 import { GITHUB_URL, SITE_AUTHOR } from '../consts';
+import SiteWidgets from './SiteWidgets.astro';
 
 const today = new Date();
 ---
 
-<footer>
-	<p>&copy; {today.getFullYear()} {SITE_AUTHOR}. 以 Astro 构建，灵感来自 Twilight。</p>
-	<div class="social-links">
-		<a href="/rss.xml">RSS</a>
-		<a href={GITHUB_URL} target="_blank" rel="noreferrer">GitHub</a>
-	</div>
+<footer class="site-footer">
+	<p>&copy; {today.getFullYear()} {SITE_AUTHOR}. All Rights Reserved. / <a href="/rss.xml">RSS</a> / <a href="/sitemap-index.xml">Sitemap</a></p>
+	<p>Powered by <a href="https://astro.build/" target="_blank" rel="noreferrer">Astro</a> & <a href={GITHUB_URL} target="_blank" rel="noreferrer">GitHub</a>. Style inspired by <a href="https://twilight.spr-aachen.com/" target="_blank" rel="noreferrer">Twilight</a>.</p>
 </footer>
-
-<style>
-	footer {
-		max-width: 1180px;
-		margin: 3rem auto 0;
-		padding: 2rem 1rem 3rem;
-		color: rgba(226, 232, 240, 0.72);
-		text-align: center;
-	}
-	footer p {
-		margin: 0;
-	}
-	.social-links {
-		display: flex;
-		justify-content: center;
-		gap: 1rem;
-		margin-top: 0.75rem;
-	}
-	.social-links a {
-		color: rgba(255, 255, 255, 0.76);
-		text-decoration: none;
-	}
-	.social-links a:hover {
-		color: #fff;
-	}
-</style>
+<SiteWidgets />
