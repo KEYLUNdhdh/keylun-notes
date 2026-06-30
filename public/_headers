@@ -1,0 +1,23 @@
+/
+  Cache-Control: no-cache
+
+/archive/
+  Cache-Control: no-cache
+
+/about/
+  Cache-Control: no-cache
+
+/friends/
+  Cache-Control: no-cache
+
+/projects/
+  Cache-Control: no-cache
+
+/skills/
+  Cache-Control: no-cache
+
+/timeline/
+  Cache-Control: no-cache
+
+/posts/*
+  Cache-Control: no-cache

@@ -1,0 +1,7 @@
+{
+  "title": "Astro",
+  "imgurl": "https://astro.build/favicon.svg",
+  "desc": "适合内容站点和个人博客的现代静态站点框架。",
+  "siteurl": "https://astro.build/",
+  "tags": ["框架", "前端", "静态站点"]
+}

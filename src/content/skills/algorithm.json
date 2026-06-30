@@ -1,0 +1,11 @@
+{
+  "name": "Algorithm",
+  "category": "Algorithm",
+  "level": "intermediate",
+  "experience": "1 year",
+  "description": "各类基础算法，数据结构，图论，数论，字符串，计算几何，动态规划等",
+  "projects": [
+    "Keylun Notes"
+  ],
+  "icon": "material-symbols:function"
+}

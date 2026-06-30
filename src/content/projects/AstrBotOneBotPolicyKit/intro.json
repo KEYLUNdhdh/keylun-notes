@@ -1,0 +1,25 @@
+{
+  "title": "AstrBot + OneBot Policy Kit",
+  "description": "面向 QQ 机器人运行场景的 AstrBot + NapCat/OneBot 策略工具包，沉淀身份识别、群聊规则注入防护、文本模型图片保护、普通文本 At 唤醒、内容分级和带宽控制等插件与部署模板。、\n还有神秘功能，体验一下就知道了",
+  "image": "/assets/images/desktopWallpaper_2.jpg",
+  "category": "other",
+  "techStack": [
+    "AstrBot",
+    "NapCat",
+    "OneBot",
+    "Docker",
+    "Python"
+  ],
+  "status": "in-progress",
+  "sourceCode": "https://github.com/KEYLUNdhdh/astrbot-onebot-policy-kit",
+  "startDate": "2026-06-27",
+  "endDate": "2026-06-30",
+  "featured": true,
+  "tags": [
+    "AstrBot",
+    "QQ Bot",
+    "OneBot",
+    "Policy",
+    "Automation"
+  ]
+}

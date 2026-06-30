@@ -1,0 +1,17 @@
+{
+  "avatar": "/assets/images/avatar.jpg",
+  "name": "KEYLUN",
+  "bio": "Keep thinking\nKeep critical thinking",
+  "links": [
+    {
+      "name": "GitHub",
+      "icon": "fa6-brands:github",
+      "url": "https://github.com/KEYLUNdhdh"
+    },
+    {
+      "name": "UESTC",
+      "icon": "fa6-solid:graduation-cap",
+      "url": "https://www.uestc.edu.cn/"
+    }
+  ]
+}

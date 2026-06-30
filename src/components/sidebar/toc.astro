@@ -1,0 +1,149 @@
+---
+import { NAVBAR_HEIGHT } from "@constants/constants";
+import { i18n } from "@i18n/translation";
+import I18nKey from "@i18n/i18nKey";
+import WidgetLayout from "./widgetLayout.astro";
+
+
+interface Props {
+    id?: string;
+    class?: string;
+    style?: string;
+    depth?: number;
+    side?: string;
+}
+
+const { id: propId, class: className, style, depth = 6, side = "default" } = Astro.props;
+const id = propId || `toc-wrapper-${side}`;
+---
+
+<WidgetLayout name={i18n(I18nKey.tableOfContents)} id={id} class:list={[className, "toc-wrapper", "toc-hide"]} style={style}>
+    <div class="toc-scroll-container">
+        <table-of-contents class="group" data-depth={depth} data-navbar-height={NAVBAR_HEIGHT}>
+            <div class="toc-inner-content relative"></div>
+        </table-of-contents>
+    </div>
+</WidgetLayout>
+
+<script>
+import "./toc";
+</script>
+
+<style>
+    .toc-scroll-container {
+        max-height: calc(100vh - 20rem);
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+    }
+    .toc-scroll-container::-webkit-scrollbar {
+        width: 4px;
+    }
+    .toc-scroll-container::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .toc-scroll-container::-webkit-scrollbar-thumb {
+        background: var(--toc-btn-hover);
+        border-radius: 10px;
+    }
+    table-of-contents#toc {
+        position: relative;
+        display: block;
+    }
+
+    /* 高亮当前项文字 */
+    :global(.toc-inner-content a.visible .text-50),
+    :global(.toc-inner-content a.visible .text-30) {
+        color: var(--primary);
+        font-weight: 500;
+    }
+
+    :global(.toc-tree) {
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+    }
+
+    :global(.toc-node) {
+        min-width: 0;
+    }
+
+    :global(.toc-row) {
+        display: grid;
+        grid-template-columns: 1.25rem minmax(0, 1fr);
+        align-items: start;
+        gap: 0.25rem;
+    }
+
+    :global(.toc-link) {
+        min-width: 0;
+    }
+
+    :global(.toc-toggle) {
+        margin-top: 0.5rem;
+        width: 1.25rem;
+        height: 1.25rem;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: color-mix(in oklch, currentColor, transparent 25%);
+        transition: transform 180ms ease, background-color 180ms ease, color 180ms ease;
+    }
+
+    :global(.toc-node.toc-has-children > .toc-row .toc-toggle) {
+        color: color-mix(in oklch, var(--primary), currentColor 30%);
+        background: color-mix(in oklch, var(--primary), transparent 90%);
+    }
+
+    :global(.toc-toggle:hover) {
+        background: var(--toc-btn-hover);
+        color: var(--primary);
+    }
+
+    :global(.toc-toggle svg) {
+        width: 0.8rem;
+        height: 0.8rem;
+        transition: transform 180ms ease;
+    }
+
+    :global(.toc-node.toc-collapsed > .toc-row .toc-toggle svg) {
+        transform: rotate(-90deg);
+    }
+
+    :global(.toc-node:not(.toc-has-children) > .toc-row .toc-toggle) {
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+    :global(.toc-children) {
+        margin-left: 1.25rem;
+    }
+
+    :global(.toc-node.toc-collapsed > .toc-children) {
+        display: none;
+    }
+
+    /* 基础过渡样式 */
+    :global(widget-layout.toc-wrapper) {
+        transition:
+            max-height 300ms cubic-bezier(0.4, 0, 0.2, 1),
+            opacity 300ms cubic-bezier(0.4, 0, 0.2, 1),
+            margin-bottom 300ms cubic-bezier(0.4, 0, 0.2, 1),
+            padding 300ms cubic-bezier(0.4, 0, 0.2, 1),
+            visibility 300ms;
+        max-height: 1200px; /* 足够容纳目录的高度，避免 100vh 可能带来的过长过渡延迟 */
+        overflow: hidden;
+    }
+    /* 隐藏状态 */
+    :global(widget-layout.toc-wrapper.toc-hide) {
+        max-height: 0;
+        opacity: 0;
+        margin-bottom: -1rem; /* 抵消父级 flex 的 gap-4 */
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        visibility: hidden;
+        pointer-events: none;
+    }
+</style>

@@ -1,0 +1,349 @@
+media:
+  - name: site_images
+    label: 站点图片
+    input: public/assets/images
+    output: /assets/images
+    categories: [image]
+    extensions: [jpg, jpeg, png, webp, gif, svg]
+  - name: post_images
+    label: 文章图片
+    input: src/content/posts
+    output: /src/content/posts
+    categories: [image]
+    extensions: [jpg, jpeg, png, webp, gif, svg]
+
+content:
+  - name: writing
+    label: 写作
+    type: group
+    items:
+      - name: posts
+        label: 文章
+        type: collection
+        path: src/content/posts
+        format: yaml-frontmatter
+        subfolders: true
+        filename:
+          template: "{year}-{month}-{day}-{primary}.md"
+          field: create
+        view:
+          primary: title
+          fields: [published, category, draft]
+          sort: published
+          order: desc
+        fields:
+          - name: title
+            label: 标题
+            type: string
+          - name: published
+            label: 发布日期
+            type: date
+          - name: updated
+            label: 更新日期
+            type: date
+            required: false
+          - name: description
+            label: 摘要
+            type: text
+            required: false
+          - name: cover
+            label: 封面图
+            type: image
+            options:
+              media: site_images
+            required: false
+          - name: coverInContent
+            label: 正文显示封面
+            type: boolean
+            required: false
+          - name: category
+            label: 分类
+            type: string
+            required: false
+          - name: tags
+            label: 标签
+            type: string
+            list: true
+            required: false
+          - name: pinned
+            label: 置顶
+            type: boolean
+            required: false
+          - name: draft
+            label: 草稿
+            type: boolean
+            required: false
+          - name: body
+            label: 正文
+            type: rich-text
+
+      - name: about_page
+        label: 关于页面
+        type: file
+        path: src/content/about.md
+        format: yaml-frontmatter
+        fields:
+          - name: title
+            label: 标题
+            type: string
+            required: false
+          - name: description
+            label: 描述
+            type: text
+            required: false
+          - name: body
+            label: 正文
+            type: rich-text
+
+      - name: friends_page
+        label: 好友页面说明
+        type: file
+        path: src/content/friends.md
+        format: yaml-frontmatter
+        fields:
+          - name: title
+            label: 标题
+            type: string
+            required: false
+          - name: description
+            label: 描述
+            type: text
+            required: false
+          - name: body
+            label: 正文
+            type: rich-text
+
+  - name: profile_group
+    label: 个人资料
+    type: group
+    items:
+      - name: profile
+        label: 侧边栏资料
+        type: file
+        path: src/content/profile.json
+        format: json
+        fields:
+          - name: name
+            label: 名称
+            type: string
+          - name: avatar
+            label: 头像
+            type: image
+            options:
+              media: site_images
+            required: false
+          - name: bio
+            label: 简介
+            type: text
+            required: false
+          - name: links
+            label: 链接
+            type: object
+            list: true
+            required: false
+            fields:
+              - name: name
+                label: 名称
+                type: string
+              - name: icon
+                label: 图标
+                type: string
+              - name: url
+                label: URL
+                type: string
+
+  - name: showcase
+    label: 展示
+    type: group
+    items:
+      - name: friends
+        label: 好友
+        type: collection
+        path: src/content/friends
+        format: json
+        filename:
+          template: "{primary}.json"
+          field: create
+        view:
+          primary: title
+          fields: [siteurl]
+          sort: title
+        fields:
+          - name: title
+            label: 站点名称
+            type: string
+          - name: imgurl
+            label: 头像链接
+            type: string
+          - name: desc
+            label: 描述
+            type: text
+          - name: siteurl
+            label: 站点链接
+            type: string
+          - name: tags
+            label: 标签
+            type: string
+            list: true
+            required: false
+
+      - name: projects
+        label: 项目
+        type: collection
+        path: src/content/projects
+        format: json
+        subfolders: true
+        filename:
+          template: "{primary}.json"
+          field: create
+        view:
+          primary: title
+          fields: [category, status, featured]
+          sort: startDate
+          order: desc
+        fields:
+          - name: title
+            label: 项目名称
+            type: string
+          - name: description
+            label: 项目描述
+            type: text
+          - name: image
+            label: 项目图片
+            type: image
+            options:
+              media: site_images
+            required: false
+          - name: category
+            label: 分类
+            type: select
+            options:
+              values: [website, software, ai, library, game, other]
+          - name: techStack
+            label: 技术栈
+            type: string
+            list: true
+            required: false
+          - name: status
+            label: 状态
+            type: select
+            options:
+              values: [completed, in-progress, planned]
+          - name: liveDemo
+            label: 在线演示
+            type: string
+            required: false
+          - name: sourceCode
+            label: 源码链接
+            type: string
+            required: false
+          - name: startDate
+            label: 开始日期
+            type: date
+            required: false
+          - name: endDate
+            label: 结束日期
+            type: date
+            required: false
+          - name: featured
+            label: 首页推荐
+            type: boolean
+            required: false
+          - name: tags
+            label: 标签
+            type: string
+            list: true
+            required: false
+
+      - name: skills
+        label: 技能
+        type: collection
+        path: src/content/skills
+        format: json
+        filename:
+          template: "{primary}.json"
+          field: create
+        view:
+          primary: name
+          fields: [category, level]
+          sort: name
+        fields:
+          - name: name
+            label: 技能名称
+            type: string
+          - name: category
+            label: 分类
+            type: string
+          - name: level
+            label: 熟练度
+            type: select
+            options:
+              values: [beginner, intermediate, advanced, expert]
+            required: false
+          - name: experience
+            label: 经验
+            type: string
+            required: false
+          - name: description
+            label: 描述
+            type: text
+          - name: projects
+            label: 相关项目
+            type: string
+            list: true
+            required: false
+          - name: icon
+            label: 图标
+            type: string
+            required: false
+
+      - name: timeline
+        label: 时间线
+        type: collection
+        path: src/content/timeline
+        format: json
+        filename:
+          template: "{primary}.json"
+          field: create
+        view:
+          primary: title
+          fields: [type, startDate, featured]
+          sort: startDate
+          order: desc
+        fields:
+          - name: title
+            label: 标题
+            type: string
+          - name: type
+            label: 类型
+            type: select
+            options:
+              values: [education, work, project, achievement]
+          - name: startDate
+            label: 开始日期
+            type: string
+          - name: endDate
+            label: 结束日期
+            type: string
+            required: false
+          - name: location
+            label: 地点
+            type: string
+            required: false
+          - name: description
+            label: 描述
+            type: text
+          - name: details
+            label: 详情
+            type: string
+            list: true
+            required: false
+          - name: featured
+            label: 推荐展示
+            type: boolean
+            required: false
+
+settings:
+  hide: false
+  content:
+    merge: true
