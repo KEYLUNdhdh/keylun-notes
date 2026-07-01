@@ -951,6 +951,250 @@ struct STable
 
 ```
 
+#### 虚树
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+using i64 = long long;
+
+struct VirtualTree
+{
+    int n;
+    vector<vector<int>> adj;
+    vector<int> dfn, dep;
+    vector<vector<int>> st;
+    int timer;
+
+    vector<vector<int>> vtadj;
+    vector<int> vtnodes;
+
+    VirtualTree(int n_) : n(n_)
+    {
+        adj.resize(n + 1);
+        vtadj.resize(n + 1);
+        dfn.resize(n + 1, 0);
+        dep.resize(n + 1, 0);
+        st.assign(20, vector<int>(n + 1, 0));
+        timer = 0;
+    }
+
+    void addEdge(int u, int v)
+    {
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    void dfs(int u, int p, int d)
+    {
+        dfn[u] = ++timer;
+        dep[u] = d;
+        st[0][u] = p;
+        for (int i = 1; i < 20;i++)
+            st[i][u] = st[i - 1][st[i - 1][u]];
+        for(int v : adj[u])
+        {
+            if(v != p)
+                dfs(v, u, d + 1);
+        }
+    }
+
+    void init(int root = 1)
+    {
+        dfs(root, 0, 1);
+    }
+
+    int getLCA(int u, int v)
+    {
+        if(dep[u] < dep[v])
+            swap(u, v);
+        for (int i = 19; i >= 0; i--)
+        {
+            if(dep[st[i][u]] >= dep[v])
+                u = st[i][u];
+        }
+
+        if(u == v)
+            return u;
+
+        for (int i = 19; i >= 0;i--)
+        {
+            if(st[i][u] != st[i][v])
+            {
+                u = st[i][u];
+                v = st[i][v];
+            }
+        }
+        return st[0][u];
+    }
+
+    int build(vector<int> nodes)
+    {
+        if(nodes.empty())
+            return 0;
+        sort(nodes.begin(), nodes.end(), [&](int u, int v)
+             { return dfn[u] < dfn[v]; });
+
+        int k = nodes.size();
+        for (int i = 0; i < k - 1;i++)
+            nodes.push_back(getLCA(nodes[i], nodes[i + 1]));
+
+        sort(nodes.begin(), nodes.end(), [&](int u, int v)
+             { return dfn[u] < dfn[v]; });
+
+        nodes.erase(unique(nodes.begin(), nodes.end()), nodes.end());
+
+        vtnodes = nodes;
+
+        for (int i = 1; i < nodes.size();i++)
+        {
+            int p = getLCA(nodes[i - 1], nodes[i]);
+            vtadj[p].push_back(nodes[i]);
+        }
+
+        return nodes[0];
+    }
+
+    void clear()
+    {
+        for(int u : vtnodes)
+            vtadj[u].clear();
+        vtnodes.clear();
+    }
+};
+```
+
+
+
+#### 李超线段树
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+using i64 = long long;
+using db = double;
+
+struct Line
+{
+    db k, b;
+    int id;
+};
+
+struct LiChaoTree
+{
+    int n;
+    vector<int> tree;
+    vector<Line> lines;
+    LiChaoTree(int n_) : n(n_), tree(4 * n_ + 1, 0), lines(1, {0, 0, 0}) {}
+    
+    db calc(int id, int x)
+    {
+        if(!id)
+            return 0;
+        return lines[id].k * x + lines[id].b;
+    }
+
+    int cmp(db x, db y)
+    {
+        const db EPS = 1e-9;
+        if(x - y > EPS)
+            return 1;
+        if(y - x > EPS)
+            return -1;
+        return 0;
+    }
+
+    void addLine(int x0, int y0, int x1, int y1, int id)
+    {
+        if(x0 > x1)
+        {
+            swap(x0, x1);
+            swap(y0, y1);
+        }
+
+        db k, b;
+        if(x0 == x1)
+        {
+            k = 0;
+            b = max(y0, y1);
+        }
+        else
+        {
+            k = 1. * (y1 - y0) / (x1 - x0);
+            b = y0 - k * x0;
+        }
+        lines.push_back({k, b, id});
+        insert(1, 1, n, x0, x1, id);
+    }
+
+    void insert(int p, int l, int r,int x, int y, int u)
+    {
+        if(x <= l && r <= y)
+        {
+            int &v = tree[p];
+            int m = l + r >> 1;
+            if(!v)
+            {
+                v = u;
+                return;
+            }
+
+            int fm = cmp(calc(u, m), calc(v, m));
+            if(fm == 1 || (fm == 0 && u < v))
+            {
+                swap(u, v);
+            }
+
+            if(l == r || !u)
+                return;
+            
+            int fl = cmp(calc(u, l), calc(v, l));
+            if(fl == 1 || (fl == 0 && u < v))
+                insert(p << 1, l, m, x, y, u);
+            else
+                insert(p << 1 | 1, m + 1, r, x, y, u);
+            return;
+        }
+        int m = l + r >> 1;
+        if(x <= m)
+            insert(p << 1, l, m, x, y, u);
+        if(y >= m + 1)
+            insert(p << 1 | 1, m + 1, r, x, y, u);
+    }
+
+    int query(int p, int l, int r, int x)
+    {
+        if(l == r)
+            return tree[p];
+        int m = l + r >> 1;
+        int ans = tree[p];
+        int sub = 0;
+
+        if(x <= m)
+            sub = query(p << 1, l, m, x);
+        else
+            sub = query(p << 1 | 1, m + 1, r, x);
+        if(!ans)
+            return sub;
+        if(!sub)
+            return ans;
+        
+        int flag = cmp(calc(ans, x), calc(sub, x));
+        if(flag == -1 || (flag == 0 && sub < ans))
+            return sub;
+        return ans;
+    }
+
+    int query(int x)
+    {
+        return query(1, 1, n, x);
+    }
+};
+
+```
+
+
+
 #### 线段树 基础区间加乘
 
 ```cpp
@@ -1046,6 +1290,219 @@ struct SegmentTree
 };
 ```
 
+#### 树链剖分
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+using i64 = long long;
+
+constexpr int P = 998244353;
+struct SegmentTree
+{
+    int n;
+    vector<i64> sum, lazy;
+
+    SegmentTree(int n_) : n(n_), sum(4 * n + 1, 0), lazy(4 * n + 1, 0){}
+
+    void pull(int p)
+    {
+        sum[p] = (sum[p << 1] + sum[p << 1 | 1]) % P;
+    }
+
+    void apply(int p, int l, int r, i64 v)
+    {
+        sum[p] = (sum[p] + v * (r - l + 1)) % P;
+        lazy[p] = (lazy[p] + v) % P;
+    }
+
+    void push(int p, int l, int r)
+    {
+        if(lazy[p])
+        {
+            int m = l + r >> 1;
+            apply(p << 1, l, m, lazy[p]);
+            apply(p << 1 | 1, m + 1, r, lazy[p]);
+            lazy[p] = 0;
+        }
+    }
+
+    void build(int p, int l, int r, const vector<i64> &a)
+    {
+        if(l >= r)
+        {
+            sum[p] = a[l] % P;
+            return;
+        }
+
+        int m = l + r >> 1;
+        build(p << 1, l, m, a);
+        build(p << 1 | 1, m + 1, r, a);
+        pull(p);
+    }
+
+    void build(const vector<i64> &a)
+    {
+        build(1, 1, n, a);
+    }
+    
+    void rangeAdd(int p, int l, int r, int x, int y, i64 v)
+    {
+        if(l > y || r < x)
+            return;
+        if(l >= x && r <= y)
+        {
+            apply(p, l, r, v);
+            return;
+        }
+        push(p, l, r);
+        int m = l + r >> 1;
+        rangeAdd(p << 1, l, m, x, y, v);
+        rangeAdd(p << 1 | 1, m + 1, r, x, y, v);
+        pull(p);
+    }
+
+    void rangeAdd(int x, int y, i64 v)
+    {
+        v %= P;
+        rangeAdd(1, 1, n, x, y, v);
+    }
+
+    i64 rangeQuery(int p,int l, int r, int x, int y)
+    {
+        if(l > y || r < x)
+            return 0;
+        if(l >= x && r <= y)
+            return sum[p];
+        push(p, l, r);
+        int m = r + l >> 1;
+        return (rangeQuery(p << 1, l, m, x, y) + rangeQuery(p << 1 | 1, m + 1, r, x, y)) % P;
+    }
+
+    i64 rangeQuery(int x,int y)
+    {
+        return rangeQuery(1, 1, n, x, y) % P;
+    }
+};
+
+struct HLD
+{
+    int n, root, timer;
+    vector<vector<int>> adj;
+    vector<int> sz, dep, fa, son, top, dfn, rnk;
+    vector<i64> val, mapped_val;
+    SegmentTree seg;
+
+    HLD(int n_, int r_) : n(n_), root(r_), timer(0), adj(n_ + 1), sz(n_ + 1, 0), dep(n_ + 1, 0), fa(n_ + 1, 0), son(n_ + 1, 0), top(n_ + 1, 0), dfn(n_ + 1, 0), rnk(n_ + 1, 0), val(n_ + 1, 0), mapped_val(n_ + 1, 0), seg(n_) {}
+
+    void addEdge(int u, int v)
+    {
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    void dfs1(int u, int p, int d)
+    {
+        dep[u] = d;
+        fa[u] = p;
+        sz[u] = 1;
+        int max_sz = -1;
+        for(int v : adj[u])
+        {
+            if(v == p)
+                continue;
+            dfs1(v, u, d + 1);
+            sz[u] += sz[v];
+            if(sz[v] > max_sz)
+            {
+                max_sz = sz[v];
+                son[u] = v;
+            }
+        }
+    }
+
+    void dfs2(int u, int t)
+    {
+        dfn[u] = ++timer;
+        rnk[timer] = u;
+        top[u] = t;
+        mapped_val[timer] = val[u];
+        if(!son[u])
+            return;
+        dfs2(son[u], t);
+
+        for(int v : adj[u])
+        {
+            if (v != fa[u] && v != son[u])
+                dfs2(v, v);
+        }
+    }
+
+    void init()
+    {
+        dfs1(root, 0, 1);
+        dfs2(root, root);
+        seg.build(mapped_val);
+    }
+
+    int getLCA(int u, int v) 
+    {
+        while (top[u] != top[v]) 
+        {
+            if (dep[top[u]] < dep[top[v]]) swap(u, v);
+            u = fa[top[u]];
+        }
+        return dep[u] < dep[v] ? u : v;
+    }
+    
+    void modifyPath(int u, int v, i64 w)
+    {
+        w %= P;
+        while(top[u] != top[v])
+        {
+            if(dep[top[u]] < dep[top[v]])
+                swap(u, v);
+            seg.rangeAdd(dfn[top[u]], dfn[u], w);
+            u = fa[top[u]];
+        }
+
+        if(dep[u] > dep[v])
+            swap(u, v);
+        seg.rangeAdd(dfn[u], dfn[v], w);
+    }
+
+    i64 queryPath(int u, int v)
+    {
+        i64 res = 0;
+        while(top[u] != top[v])
+        {
+            if(dep[top[u]] < dep[top[v]])
+                swap(u, v);
+            res = (res + seg.rangeQuery(dfn[top[u]], dfn[u])) % P;
+            u = fa[top[u]];
+        }
+
+        if(dep[u] > dep[v])
+            swap(u, v);
+        res = (res + seg.rangeQuery(dfn[u], dfn[v])) % P;
+        return res;
+    }
+
+    void modifySubtree(int u, i64 w)
+    {
+        w %= P;
+        seg.rangeAdd(dfn[u], dfn[u] + sz[u] - 1, w);
+    }
+
+    i64 querySubtree(int u)
+    {
+        return seg.rangeQuery(dfn[u], dfn[u] + sz[u] - 1);
+    }
+};
+```
+
+
+
 #### 线段树区间最大最小值
 
 ```cpp
@@ -1129,8 +1586,6 @@ int main() {
     }
 }
 ```
-
-
 
 #### 线段树区间平方和
 
@@ -1311,6 +1766,209 @@ int main() {
 ```
 
 ### 数论，几何，多项式
+
+#### 多项式
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+using i64 = long long;
+
+const i64 MOD = 998244353;
+const int G = 3;
+
+i64 qpow(i64 a, i64 b)
+{
+    i64 res = 1;
+    a = (a % MOD + MOD) % MOD;
+    while(b)
+    {
+        if(b & 1)
+            res = res * a % MOD;
+        a = a * a % MOD;
+        b >>= 1;
+    }
+    return res;
+}
+
+namespace NTT
+{
+    vector<i64> rev;
+    void initRev(int limit)
+    {
+        if(limit <= 1)
+            return;
+        if(rev.size() == limit)
+            return;
+        int l = __builtin_ctz(limit);
+        rev.resize(limit);
+        for (int i = 0; i < limit;i++)
+            rev[i] = (rev[i >> 1] >> 1) | ((i & 1) << (l - 1));
+    }
+
+    void transform(vector<i64> &a, int flag)
+    {
+        int n = a.size();
+
+        initRev(n);
+        for(int i = 0;i < n;i++)
+            if(i < rev[i])
+                swap(a[i], a[rev[i]]);
+
+        for (int mid = 1; mid < n;mid <<= 1)
+        {
+            i64 wn = qpow(G, (MOD - 1) / (mid << 1));
+            if(flag == -1)
+                wn = qpow(wn, MOD - 2);
+
+            for (int i = 0; i < n;i += (mid << 1))
+            {
+                i64 w = 1;
+                for (int j = 0; j < mid;j++, w = w * wn % MOD)
+                {
+                    i64 x = a[i + j];
+                    i64 y = w * a[i + j + mid] % MOD;
+                    a[i + j] = (x + y >= MOD ? x + y - MOD : x + y);
+                    a[i + j + mid] = (x - y < 0 ? x - y + MOD : x - y);
+                }
+            }
+        }
+
+        if(flag == -1)
+        {
+            i64 invN = qpow(n, MOD - 2);
+            for (int i = 0; i < n;i++)
+                a[i] = a[i] * invN % MOD;
+        }
+    }
+}
+
+struct Poly
+{
+    vector<i64> a;
+
+    Poly() {}
+    explicit Poly(int size) : a(size, 0) {}
+    Poly(const vector<i64> &a_) : a(a_) {}
+    Poly(initializer_list<i64> a_) : a(a_) {}
+
+    int size() const { return a.size(); }
+    void resize(int n) { a.resize(n); }
+
+    i64 operator[](int idx) const { return idx < size() ? a[idx] : 0; }
+    i64 &operator[](int idx) { return a[idx]; }
+
+    Poly modXk(int k) const
+    {
+        k = min(k, size());
+        return Poly(vector<i64>(a.begin(), a.begin() + k));
+    }
+
+    Poly mulXk(int k) const
+    {
+        auto b = a;
+        b.insert(b.begin(), k, 0);
+        return Poly(b);
+    }
+
+    friend Poly operator+(const Poly &A, const Poly &B)
+    {
+        Poly res(max(A.size(), B.size()));
+        for (int i = 0; i < res.size(); i++)
+            res[i] = (A[i] + B[i]) % MOD;
+        return res;
+    }
+
+    friend Poly operator-(const Poly &A, const Poly &B)
+    {
+        Poly res(max(A.size(), B.size()));
+        for (int i = 0; i < res.size(); i++)
+            res[i] = (A[i] - B[i] + MOD) % MOD;
+        return res;
+    }
+    
+    friend Poly operator*(Poly A, Poly B)
+    {
+        if(A.size() == 0 || B.size() == 0)
+            return Poly();
+
+        int n = A.size(), m = B.size();
+        int limit = 1;
+        while(limit < n + m - 1)
+            limit <<= 1;
+
+        A.resize(limit);
+        B.resize(limit);
+        NTT::transform(A.a, 1);
+        NTT::transform(B.a, 1);
+        for (int i = 0; i < limit;i++)
+            A[i] = A[i] * B[i] % MOD;
+
+        NTT::transform(A.a, -1);
+        A.resize(n + m - 1);
+        return A;
+    }
+
+    friend Poly operator*(Poly A, i64 k)
+    {
+        k = (k % MOD + MOD) % MOD;
+        for (int i = 0; i < A.size();i++)
+            A[i] = A[i] * k % MOD;
+        return A;
+    }
+
+    Poly deriv() const
+    {
+        if(size() <= 1)
+            return Poly({0});
+        Poly res(size() - 1);
+        for (int i = 1;i < size(); i++)
+            res[i - 1] = a[i] * i % MOD;
+        return res;
+    }
+
+    Poly integr() const
+    {
+        Poly res(size() + 1);
+        for (int i = 0; i < size();i++)
+            res[i + 1] = a[i] * qpow(i + 1, MOD - 2) % MOD;
+        return res;
+    }
+
+    Poly inv(int deg) const 
+    {
+        Poly res({qpow(a[0], MOD - 2)});
+        int k = 1;
+        while(k < deg)
+        {
+            k <<= 1;
+            Poly cur = modXk(k);
+            res = (res * (Poly({2}) - cur * res)).modXk(k);
+        }
+        return res.modXk(deg);
+    }
+
+    Poly ln(int deg) const
+    {
+        return (deriv() * inv(deg)).integr().modXk(deg);
+    }
+
+    Poly exp(int deg) const 
+    {
+        Poly res({1});
+        int k = 1;
+        while(k < deg)
+        {
+            k <<= 1;
+            Poly cur = modXk(k);
+            res = (res * (Poly({1}) - res.ln(k) + cur)).modXk(k);
+        }
+        return res.modXk(deg);
+    }
+};
+```
+
+
 
 #### 高斯消元
 
@@ -1547,12 +2205,14 @@ void sieve(int n)
 }
 ```
 
-#### 欧拉函数
+#### 欧拉函数 莫比乌斯函数，因数函数，因数个数函数
 
 ```cpp
 //欧拉函数，表示小于等于 n 且与 n 互质的正整数个数。
 #include <bits/stdc++.h>
 using namespace std;
+
+//求解单个函数的欧拉函数。
 int phi(int n)
 {
     int res = n;
@@ -1569,7 +2229,63 @@ int phi(int n)
         res = res / n * (n - 1);
     return res;
 }
+
+//线性筛同时求欧拉函数和莫比乌斯函数
+namespace sieve
+{
+    int n;
+    vector<int> primes;
+    vector<int> phi, mu, vis;
+
+    void init(int n_)
+    {
+        n = n_;
+        primes.clear();
+        phi.assign(n + 1, 0);
+        mu.assign(n + 1, 0);
+        vis.assign(n + 1, 0);
+    }
+
+    void run()
+    {
+        phi[1] = 1;
+        mu[1] = 1;
+        for (int i = 2; i <= n;i++)
+        {
+            if(!vis[i]) // 没被访问过，说明是质数
+            {
+                primes.push_back(i);
+                phi[i] = i - 1;
+                mu[i] = -1;
+            }
+
+            for(int p : primes) // 假设已经知道 i，转移到 i * p
+            {
+                if(1ll * i * p > n)
+                    break;
+
+                int x = i * p;
+                vis[x] = 1;
+
+                if(i % p == 0)// i本身含有p这个因子
+                {
+                    phi[x] = phi[i] * p;
+                    mu[x] = 0;
+                    // 当 p | i 时，说明 p 是当前 i * p 的最小质因子。继续用更大的质数去筛，会破坏“每个合数只被最小质因子筛一次”的性质。
+                    break;
+                }
+                else // p是新加入的这个质数因子
+                {
+                    phi[x] = phi[i] * (p - 1);//直接乘上phi[p]
+                    mu[x] = -mu[i];// 符号翻转
+                }
+            }
+        }
+    }
+}
 ```
+
+
 
 #### 求逆元
 
@@ -2205,6 +2921,708 @@ struct Comb
 
 ### 图论
 
+#### 二分图最大匹配（基于 Dinic)
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+using i64 = long long;
+
+constexpr i64 MOD = 998244353, INF = 1e9;
+
+struct Dinic
+{
+    struct Edge
+    {
+        int to;
+        int cap;
+        int flow;
+        int rev;
+    };
+
+    int n;
+    vector<vector<Edge>> adj;
+    vector<int> level;
+    vector<int> ptr;
+
+    Dinic(int n_)
+    {
+        init(n_);
+    }
+
+    void init(int n_)
+    {
+        n = n_;
+        adj.assign(n + 1, vector<Edge>());
+        level.resize(n + 1);
+        ptr.resize(n + 1);
+    }
+
+    void addEdge(int from, int to , int cap)
+    {
+        adj[from].push_back({to, cap, 0, (int)adj[to].size()});
+        adj[to].push_back({from, 0, 0, (int)adj[from].size() - 1});
+    }
+
+    bool bfs(int s, int t)
+    {
+        fill(level.begin(), level.end(), -1);
+        level[s] = 0;
+        queue<int> q;
+        q.push(s);
+
+        while(!q.empty())
+        {
+            int u = q.front();
+            q.pop();
+
+            for(auto &[to, cap, flow, rev] : adj[u])
+            {
+                if(cap - flow > 0 && level[to] == -1)
+                {
+                    level[to] = level[u] + 1;
+                    q.push(to);
+                }
+            }
+        }
+
+        return level[t] != -1;
+    }
+
+    int dfs(int v, int t, int pushed)
+    {
+        if(pushed == 0)
+            return 0;
+        if(v == t)
+            return pushed;
+
+        for (int &cid = ptr[v]; cid < adj[v].size(); cid++)
+        {
+            auto &[to, cap, flow, rev] = adj[v][cid];
+            int tr = to;
+
+            if(level[v] + 1 != level[tr] || cap - flow == 0)
+                continue;
+
+            int push = dfs(tr, t, min(pushed, cap - flow));
+            if(push == 0)
+                continue;
+
+            flow += push;
+            adj[tr][rev].flow -= push;
+            return push;
+        }
+        return 0;
+    }
+
+    int maxFlow(int s, int t)
+    {
+        int flow = 0;
+        while(bfs(s, t))
+        {
+            fill(ptr.begin(), ptr.end(), 0);
+
+            while(int pushed = dfs(s, t, INF))
+                flow += pushed;
+        }
+        return flow;
+    }
+};
+
+void solve()
+{
+    int n, m, e;
+    cin >> n >> m >> e;
+
+    int s = 0;// 超级源点 S 的身份证号
+    int t = n + m + 1;// 超级汇点 T 的身份证号
+    Dinic dinic(t);// 告诉 Dinic 引擎，图中最大的编号是 t
+
+    // 1. 超级源点 S 连接所有左部点，容量为 1
+    for (int i = 1; i <= n;i++)
+    {
+        dinic.addEdge(s, i, 1);
+    }
+
+    // 2. 所有右部点连接超级汇点 T，容量为 1
+    for (int i = 1; i <= m;i++)
+    {
+        dinic.addEdge(n + i, t, 1);
+    }
+
+    // 3. 读取边，连接左右部点
+    for (int i = 0; i < e;i++)
+    {
+        int u, v;
+        cin >> u >> v;
+        // 左部点 u，右部点 v (为了避免编号冲突，右部点编号加上 n)
+        // 即使有重边也没关系，最大流算法会自动处理
+        dinic.addEdge(u, n + v, 1);
+    }
+
+    // 输出最大匹配数（即最大流）
+    cout << dinic.maxFlow(s, t) << "\n";
+}
+
+signed main()
+{
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    int T = 1;
+    // cin >> T;
+    while(T--)
+        solve();
+
+    return 0;
+}
+```
+
+
+
+#### 割点 与 点双连通分量 (v-BCC)
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+using i64 = long long;
+
+struct VBCC
+{
+    int n;
+    vector<vector<int>> adj;
+    vector<int> dfn, low, isCut, stk;
+    int dfncnt, vbccnt, cutcnt;
+    vector<vector<int>> vbc;
+
+    VBCC(int n_)
+    {
+        init(n_);
+    }
+
+    void init(int n_)
+    {
+        n = n_;
+        adj.assign(n + 1, vector<int>());
+        dfn.assign(n + 1, 0);
+        low.resize(n + 1);
+        isCut.assign(n + 1, 0);
+        stk.clear();
+        vbc.clear();
+        dfncnt = vbccnt = cutcnt = 0;
+    }
+
+    void addEdge(int u, int v)
+    {
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    void dfs(int u, int p = 0)
+    {
+        dfn[u] = low[u] = ++dfncnt;
+        stk.push_back(u);
+        int child = 0;
+
+        if(p == 0 && adj[u].empty())
+        {
+            vbccnt++;
+            stk.pop_back();
+            vbc.push_back({u});
+            return;
+        }
+
+        for(int v : adj[u])
+        {
+            if(!dfn[v])
+            {
+                child++;
+                dfs(v, u);
+                low[u] = min(low[u], low[v]);
+
+                if(low[v] >= dfn[u])
+                {
+                    isCut[u] = 1;
+                    vbccnt++;
+                    vector<int> comp;
+                    while(1)
+                    {
+                        int x = stk.back();
+                        stk.pop_back();
+                        comp.push_back(x);
+                        if(x == v)
+                            break;
+                    }
+                    comp.push_back(u);
+                    vbc.push_back(comp);
+                }
+            }
+            else if(v != p)
+            {
+                low[u] = min(low[u], dfn[v]);
+            }
+        }
+        if(p == 0 && child < 2)
+            isCut[u] = 0;
+    }
+
+    void work()
+    {
+        for (int i = 1; i <= n;i++)
+        {
+            if(!dfn[i])
+            {
+                stk.clear();
+                dfs(i);
+            }
+        }
+        for (int i = 1; i <= n;i++)
+        {
+            if(isCut[i])
+                cutcnt++;
+        }
+    }
+};
+```
+
+
+
+#### 割边 (桥) 与 边双连通分量 (e-BCC)
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+using i64 = long long;
+typedef pair<int, int> pii;
+struct EBCC
+{
+    int n;
+    vector<vector<pii>> adj;
+    vector<int> dfn, low, stk;
+    int dfncnt, ebccnt, bridgecnt;
+    vector<vector<int>> ebc;
+    EBCC(int n_)
+    {
+        init(n_);
+    }
+
+    void init(int n_)
+    {
+        n = n_;
+        adj.assign(n + 1, vector<pii>());
+        dfn.assign(n + 1, 0);
+        low.resize(n + 1, 0);
+        stk.clear();
+        ebc.clear();
+        dfncnt = ebccnt = bridgecnt = 0;
+    }
+    
+    void addEdge(int u, int v, int id)
+    {
+        adj[u].push_back({v, id});
+        adj[v].push_back({u, id});
+    }
+
+    void dfs(int u, int inEdge = 0)
+    {
+        dfn[u] = low[u] = ++dfncnt;
+        stk.push_back(u);
+
+        for(auto &[v, id] : adj[u])
+        {
+            if(!dfn[v])
+            {
+                dfs(v, id);
+                low[u] = min(low[u], low[v]);
+
+                if(low[v] > dfn[u])
+                    bridgecnt++;
+            }
+            else if(id != inEdge)
+            {
+                low[u] = min(low[u], dfn[v]);
+            }
+        }
+
+        if(low[u] == dfn[u])
+        {
+            ebccnt++;
+            vector<int> comp;
+            while(1)
+            {
+                int x = stk.back();
+                stk.pop_back();
+                comp.push_back(x);
+                if(x == u)
+                    break;
+            }
+            ebc.push_back(comp);
+        }
+    }
+
+    void work()
+    {
+        for (int i = 1; i <= n;i++)
+        {
+            if(!dfn[i])
+            {
+                stk.clear();
+                dfs(i);
+            }
+        }
+    }
+};
+
+
+```
+
+#### 最小费用最大流
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+using i64 = long long;
+typedef pair<i64, i64> pll;
+const i64 INF = 2e18;
+
+struct MCFGraph
+{
+    struct Edge
+    {
+        int to;
+        i64 cap;
+        i64 flow;
+        i64 cost;
+        int rev;
+    };
+
+    int n;
+    vector<vector<Edge>> adj;
+    vector<i64> h;
+    vector<i64> dist;
+    vector<int> prevV;
+    vector<int> prevE;
+
+    MCFGraph() {}
+    MCFGraph(int n_)
+    {
+        init(n_);
+    }
+
+    void init(int n_)
+    {
+        n = n_;
+        adj.assign(n + 1, vector<Edge>());
+        h.assign(n + 1, 0);
+        dist.resize(n + 1, 0);
+        prevV.resize(n + 1);
+        prevE.resize(n + 1);
+    }
+
+    void addEdge(int from, int to, i64 cap, i64 cost)
+    {
+        adj[from].push_back({to, cap, 0, cost, (int)adj[to].size()});
+        adj[to].push_back({from, 0, 0, -cost, (int)adj[from].size() - 1});
+    }
+
+    pll work(int s, int t)
+    {
+        i64 maxFlow = 0;
+        i64 minCost = 0;
+
+        while(1)
+        {
+            priority_queue<pll, vector<pll>, greater<pll>> pq;
+
+            fill(dist.begin(), dist.end(), INF);
+            dist[s] = 0;
+            pq.push({0, s});
+
+            while(!pq.empty())
+            {
+                auto [d, u] = pq.top();
+                pq.pop();
+
+                if(dist[u] < d)
+                    continue;
+
+                for (int i = 0; i < adj[u].size(); i++)
+                {
+                    auto &[to, cap, flow, cost, rev] = adj[u][i];
+                    if(cap - flow > 0)
+                    {
+                        i64 reducedCost = cost + h[u] - h[to];
+
+                        if(dist[to] > dist[u] + reducedCost)
+                        {
+                            dist[to] = dist[u] + reducedCost;
+                            prevV[to] = u;
+                            prevE[to] = i;
+                            pq.push({dist[to], to});
+                        }
+                    }
+                }
+            }
+
+            if(dist[t] == INF)
+                break;
+
+            for (int i = 0; i <= n; i++)
+            {
+                if(dist[i] != INF)
+                    h[i] += dist[i];
+            }
+
+            i64 push = 2e18;
+            for (int v = t; v != s; v = prevV[v])
+            {
+                int u = prevV[v];
+                int idx = prevE[v];
+                push = min(push, adj[u][idx].cap - adj[u][idx].flow);
+            }
+
+            maxFlow += push;
+            minCost += push * h[t];
+
+            for (int v = t; v != s; v=  prevV[v])
+            {
+                int u = prevV[v];
+                int idx = prevE[v];
+                int rev = adj[u][idx].rev;
+
+                adj[u][idx].flow += push;
+                adj[v][rev].flow -= push;
+            }
+        }
+        return {maxFlow, minCost};
+    }
+};
+```
+
+
+
+#### Dinic 求最大流
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+using i64 = long long;
+
+const i64 INF = 2e18;
+
+struct Dinic
+{
+    struct Edge
+    {
+        int to;
+        i64 cap;
+        i64 flow;
+        int rev;
+    };
+
+    int n;
+    vector<vector<Edge>> adj;
+    vector<int> level;
+    vector<int> ptr;
+
+    Dinic () {}
+    Dinic(int n_)
+    {
+        init(n_);
+    }
+
+    void init(int n_)
+    {
+        n = n_;
+        adj.assign(n + 1, vector<Edge>());
+        level.resize(n + 1);
+        ptr.resize(n + 1);
+    }
+
+    void addEdge(int from, int to , i64 cap)
+    {
+        adj[from].push_back({to, cap, 0, (int)adj[to].size()});
+        adj[to].push_back({from, 0, 0, (int)adj[from].size() - 1});
+    }
+
+    bool bfs(int s, int t)
+    {
+        fill(level.begin(), level.end(), -1);
+        level[s] = 0;
+        queue<int> q;
+        q.push(s);
+
+        while(!q.empty())
+        {
+            int u = q.front();
+            q.pop();
+
+            for(auto &[to, cap, flow, rev] : adj[u])
+            {
+                if(cap - flow > 0 && level[to] == -1)
+                {
+                    level[to] = level[u] + 1;
+                    q.push(to);
+                }
+            }
+        }
+
+        return level[t] != -1;
+    }
+
+    i64 dfs(int v, int t, i64 pushed)
+    {
+        if(pushed == 0)
+            return 0;
+        if(v == t)
+            return pushed;
+
+        for (int &cid = ptr[v]; cid < adj[v].size(); cid++)
+        {
+            auto &[to, cap, flow, rev] = adj[v][cid];
+            int tr = to;
+
+            if(level[v] + 1 != level[tr] || cap - flow == 0)
+                continue;
+
+            i64 push = dfs(tr, t, min(pushed, cap - flow));
+            if(push == 0)
+                continue;
+
+            flow += push;
+            adj[tr][rev].flow -= push;
+            return push;
+        }
+        return 0;
+    }
+
+    i64 maxFlow(int s, int t)
+    {
+        i64 flow = 0;
+        while(bfs(s, t))
+        {
+            fill(ptr.begin(), ptr.end(), 0);
+
+            while(i64 pushed = dfs(s, t, INF))
+                flow += pushed;
+        }
+        return flow;
+    }
+};
+```
+
+
+
+#### Prufer序
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+using i64 = long long;
+typedef pair<int, int> pii;
+struct Prufer
+{
+    static vector<int> treeToPrufer(int n, const vector<pii> &edges)
+    {
+        vector<int> pruferSeq;
+        if(n <= 2)
+            return pruferSeq;
+
+        vector<int> degree(n + 1, 0);
+        vector<int> xorSum(n + 1, 0);
+
+        for(const auto &[u, v] : edges)
+        {
+            degree[u]++;
+            degree[v]++;
+            xorSum[u] ^= v;
+            xorSum[v] ^= u;
+        }
+
+        int ptr = 1;
+        while(ptr <= n && degree[ptr] != 1)
+            ptr++;
+
+        int leaf = ptr;
+
+        for (int i = 0; i < n - 2;i++)
+        {
+            int neighbor = xorSum[leaf];
+            pruferSeq.push_back(neighbor);
+
+            degree[leaf]--;
+            degree[neighbor]--;
+            xorSum[neighbor] ^= leaf;
+
+            if(degree[neighbor] == 1 && neighbor < ptr)
+                leaf = neighbor;
+            else
+            {
+                ptr++;
+                while(ptr <= n && degree[ptr] != 1)
+                    ptr++;
+                leaf = ptr;
+            }
+        }
+        return pruferSeq;
+    }
+
+    static vector<pii> pruferToTree(int n, const vector<int> &pruferSeq)
+    {
+        vector<pii> edges;
+        if(n == 2)
+        {
+            edges.push_back({1, 2});
+            return edges;
+        }
+
+        vector<int> degree(n + 1, 1);
+        for(int node : pruferSeq)
+            degree[node]++;
+
+        int ptr = 1;
+        while(ptr <= n && degree[ptr] != 1)
+            ptr++;
+
+        int leaf = ptr;
+        for(int node : pruferSeq)
+        {
+            edges.push_back({leaf, node});
+            degree[leaf]--;
+            degree[node]--;
+
+            if(degree[node] == 1 && node < ptr)
+                leaf = node;
+            else
+            {
+                ptr++;
+                while(ptr <= n && degree[ptr] != 1)
+                    ptr++;
+                leaf = ptr;
+            }
+        }
+
+        int u = -1, v = -1;
+        for (int i = 1; i <= n;i++)
+        {
+            if(degree[i] == 1)
+            {
+                if(u == -1)
+                    u = i;
+                else
+                    v = i;
+            }
+        }
+
+        if(u != -1 && v != -1)
+            edges.push_back({u, v});
+
+        return edges;
+    }
+};
+```
+
+
+
 #### 强分量缩点
 
 ```cpp
@@ -2284,6 +3702,33 @@ struct SCC
     }
 };
 ```
+
+#### 树哈希
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+using i64 = long long;
+using u64 = unsigned long long;
+mt19937_64 rnd(chrono::steady_clock::now().time_since_epoch().count());
+
+const u64 MASK = rnd();
+
+struct TreeHasher
+{
+    static u64 shift(u64 x)
+    {
+        x ^= MASK;
+        x ^= x << 13;
+        x ^= x >> 7;
+        x ^= x << 17;
+        x ^= MASK;
+        return x;
+    }
+};
+```
+
+
 
 #### 最小生成树Prim
 
@@ -3265,3 +4710,4 @@ struct Frac
 };
 ```
 
+****
