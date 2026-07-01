@@ -4,6 +4,7 @@ import { render } from "astro:content";
 import type { CollectionEntry } from "astro:content";
 
 import { getFileDirFromPath, getPostUrl } from "@utils/url";
+import { renderDescriptionMarkdown } from "@utils/markdownDescription";
 import { postConfig } from "@/config";
 import { i18n } from "@i18n/translation";
 import I18nKey from "@i18n/i18nKey";
@@ -45,6 +46,7 @@ const showContentOnCover = postConfig.card.cover.showContent;
 const titleSize = postConfig.card.titleSize;
 
 const { remarkPluginFrontmatter } = await render(entry);
+const descriptionHtml = renderDescriptionMarkdown(description);
 
 // derive image base path from the real file path to preserve directory casing
 const imageBaseDir = getFileDirFromPath(entry.filePath || "");
@@ -69,7 +71,7 @@ const defaultCoverGradient = "linear-gradient(135deg, color-mix(in oklch, oklch(
         <PostMetadata published={published} updated={updated} tags={tags} category={category || undefined} hideTagsForMobile={true} hideUpdateDate={true} postUrl={url} className="mb-4"></PostMetadata>
         <!-- description -->
         <div class:list={["transition text-75 mb-3.5 pr-4", {"line-clamp-2 @min-[768px]:line-clamp-1": !description}]}>
-            { description || remarkPluginFrontmatter.excerpt }
+            {description ? <div class="post-description-markdown" set:html={descriptionHtml} /> : remarkPluginFrontmatter.excerpt}
         </div>
         <!-- word count and read time  -->
         <div class="text-sm text-black/30 dark:text-white/30 flex gap-4 transition">
@@ -133,4 +135,26 @@ const defaultCoverGradient = "linear-gradient(135deg, color-mix(in oklch, oklch(
 </div>
 
 <style define:vars={{coverWidth, coverMargin, coverGap}}>
+    .post-description-markdown :global(p) {
+        margin: 0;
+    }
+
+    .post-description-markdown :global(a) {
+        color: var(--primary);
+        text-decoration: underline;
+        text-underline-offset: 0.15em;
+    }
+
+    .post-description-markdown :global(code) {
+        border-radius: 0.25rem;
+        background: color-mix(in oklch, currentColor, transparent 90%);
+        padding: 0.05rem 0.25rem;
+        font-size: 0.92em;
+    }
+
+    .post-description-markdown :global(ul),
+    .post-description-markdown :global(ol) {
+        margin: 0;
+        padding-left: 1.1rem;
+    }
 </style>

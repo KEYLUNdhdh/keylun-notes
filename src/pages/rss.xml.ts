@@ -11,6 +11,7 @@ import { getSortedPosts } from "@utils/post";
 import { getCategoryPathLabel } from "@utils/category";
 import { parseTags } from "@utils/tag";
 import { getFileDirFromPath, getPostUrl } from "@utils/url";
+import { descriptionMarkdownToText } from "@utils/markdownDescription";
 
 
 const markdownParser = new MarkdownIt();
@@ -94,7 +95,7 @@ export async function GET(context: APIContext) {
 
         feed.push({
             title: post.data.title,
-            description: post.data.description,
+            description: descriptionMarkdownToText(post.data.description),
             pubDate: post.data.published,
             link: getPostUrl(post),
             categories: categories,

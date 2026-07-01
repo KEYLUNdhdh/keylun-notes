@@ -44,7 +44,7 @@ content:
             required: false
           - name: description
             label: 摘要
-            type: text
+            type: rich-text
             required: false
           - name: cover
             label: 封面图

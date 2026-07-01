@@ -3,6 +3,7 @@ import { Icon } from "astro-icon/components";
 
 import { getSortedPosts } from "@utils/post";
 import { formatDateToYYYYMMDD } from "@utils/date";
+import { renderDescriptionMarkdown } from "@utils/markdownDescription";
 import { i18n } from "@i18n/translation";
 import I18nKey from "@i18n/i18nKey";
 import GridLayout from "@layouts/grid.astro";
@@ -68,9 +69,7 @@ const recentPosts = posts.slice(0, 6);
                             </a>
                         </h3>
                         {post.data.description && (
-                            <p class="text-75 mb-3 line-clamp-2">
-                                {post.data.description}
-                            </p>
+                            <div class="feed-description text-75 mb-3 line-clamp-2" set:html={renderDescriptionMarkdown(post.data.description)} />
                         )}
                         <div class="flex items-center gap-4 text-sm text-60">
                             <time datetime={post.data.published.toISOString()} class="text-75">
@@ -132,3 +131,15 @@ const recentPosts = posts.slice(0, 6);
     </script>
 
 </GridLayout>
+
+<style>
+    .feed-description :global(p) {
+        margin: 0;
+    }
+
+    .feed-description :global(a) {
+        color: var(--primary);
+        text-decoration: underline;
+        text-underline-offset: 0.15em;
+    }
+</style>

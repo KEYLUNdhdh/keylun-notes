@@ -9,6 +9,7 @@ import { getSortedPosts } from "@utils/post";
 import { getCategoryPathParts } from "@utils/category";
 import { parseTags } from "@utils/tag";
 import { getFileDirFromPath, getPostUrl } from "@utils/url";
+import { descriptionMarkdownToText } from "@utils/markdownDescription";
 
 
 const markdownParser = new MarkdownIt();
@@ -110,6 +111,7 @@ export async function GET(context: APIContext) {
 
         // 添加Atom条目
         const postUrl = new URL(getPostUrl(post), context.site).href;
+        const summary = descriptionMarkdownToText(post.data.description);
         const content = sanitizeHtml(html.toString(), {
             allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img"]),
         });
@@ -121,7 +123,7 @@ export async function GET(context: APIContext) {
             <id>${escapeXml(postUrl)}</id>
             <published>${post.data.published.toISOString()}</published>
             <updated>${post.data.updated?.toISOString() || post.data.published.toISOString()}</updated>
-            <summary>${escapeXml(post.data.description || "")}</summary>
+            <summary>${escapeXml(summary)}</summary>
             <content type="html"><![CDATA[${wrapCdata(content)}]]></content>
             <author>
                 <name>${escapeXml(profileConfig.name)}</name>

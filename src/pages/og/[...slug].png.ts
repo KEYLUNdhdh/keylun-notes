@@ -7,6 +7,7 @@ import sharp from "sharp";
 
 import { profileConfig, siteConfig } from "@/config";
 import { defaultFavicons } from "@constants/icon";
+import { descriptionMarkdownToText } from "@utils/markdownDescription";
 
 
 type Weight = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900;
@@ -127,7 +128,7 @@ export async function GET({
         day: "numeric",
     });
 
-    const description = post.data.description;
+    const description = descriptionMarkdownToText(post.data.description);
 
     const template = {
         type: "div",
