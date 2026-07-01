@@ -11,6 +11,11 @@ media:
     output: /src/content/posts
     categories: [image]
     extensions: [jpg, jpeg, png, webp, gif, svg]
+  - name: site_audio
+    label: 站点音频
+    input: public/assets/music
+    output: /assets/music
+    extensions: [mp3, m4a, wav, ogg, flac, lrc]
 
 content:
   - name: writing
@@ -150,6 +155,87 @@ content:
                 type: string
               - name: url
                 label: URL
+                type: string
+
+      - name: music_player
+        label: 音乐播放器
+        type: file
+        path: src/content/music-player.json
+        format: json
+        fields:
+          - name: enable
+            label: 启用播放器
+            type: boolean
+          - name: mode
+            label: 默认音源模式
+            type: select
+            options:
+              values: [local, meting]
+          - name: autoplay
+            label: 自动播放
+            type: boolean
+            required: false
+          - name: local
+            label: 本地音频
+            type: object
+            fields:
+              - name: playlist
+                label: 播放列表
+                type: object
+                list:
+                  collapsible:
+                    collapsed: true
+                    summary: "{title} - {artist}"
+                fields:
+                  - name: id
+                    label: 序号
+                    type: number
+                  - name: title
+                    label: 标题
+                    type: string
+                  - name: artist
+                    label: 作者
+                    type: string
+                  - name: cover
+                    label: 封面链接
+                    type: string
+                    required: false
+                  - name: url
+                    label: 音频文件
+                    type: file
+                    options:
+                      media: site_audio
+                    extensions: [mp3, m4a, wav, ogg, flac]
+                  - name: lrc
+                    label: 歌词文件
+                    type: file
+                    options:
+                      media: site_audio
+                    extensions: [lrc]
+                    required: false
+                  - name: duration
+                    label: 时长（秒）
+                    type: number
+                    required: false
+          - name: meting
+            label: Meting 云端歌单
+            type: object
+            fields:
+              - name: meting_api
+                label: API 地址
+                type: string
+              - name: server
+                label: 音乐平台
+                type: select
+                options:
+                  values: [netease, tencent, kugou, baidu, kuwo]
+              - name: type
+                label: 资源类型
+                type: select
+                options:
+                  values: [playlist, album, artist, song, search]
+              - name: id
+                label: 资源 ID
                 type: string
 
   - name: showcase

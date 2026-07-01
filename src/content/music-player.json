@@ -1,0 +1,24 @@
+{
+  "enable": true,
+  "mode": "local",
+  "meting": {
+    "meting_api": "https://meting.spr-aachen.com/api",
+    "server": "netease",
+    "type": "playlist",
+    "id": "2161912966"
+  },
+  "local": {
+    "playlist": [
+      {
+        "id": 1,
+        "title": "深海之息",
+        "artist": "Youzee Music",
+        "cover": "https://p1.music.126.net/PhKOqFtljgHDDpKYM2ADUA==/109951169858309716.jpg",
+        "url": "assets/music/深海之息.m4a",
+        "lrc": "assets/music/深海之息.lrc",
+        "duration": 146
+      }
+    ]
+  },
+  "autoplay": false
+}

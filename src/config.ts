@@ -17,6 +17,7 @@ import type {
 import { LinkPreset } from "./types/config";
 import rawConfig from "../twilight.config.yaml?raw";
 import profileOverride from "./content/profile.json";
+import musicPlayerOverrideFile from "./content/music-player.json";
 
 
 type ConfigFile = {
@@ -36,6 +37,7 @@ type ConfigFile = {
 };
 
 const config = yaml.load(rawConfig) as ConfigFile;
+const musicPlayerOverride = musicPlayerOverrideFile as Partial<MusicPlayerConfig>;
 
 const linkPresetNameMap: Record<string, LinkPreset> = {
     Home: LinkPreset.Home,
@@ -125,7 +127,19 @@ export const footerConfig: FooterConfig = config.footer;
 export const particleConfig: ParticleConfig = config.particle;
 
 // 音乐播放器配置
-export const musicPlayerConfig: MusicPlayerConfig = config.musicPlayer;
+export const musicPlayerConfig: MusicPlayerConfig = {
+    ...config.musicPlayer,
+    ...musicPlayerOverride,
+    meting: {
+        ...config.musicPlayer.meting,
+        ...(musicPlayerOverride.meting ?? {}),
+    },
+    local: {
+        ...config.musicPlayer.local,
+        ...(musicPlayerOverride.local ?? {}),
+        playlist: musicPlayerOverride.local?.playlist ?? config.musicPlayer.local.playlist,
+    },
+};
 
 // 看板娘配置
 export const pioConfig: PioConfig = config.pio;
