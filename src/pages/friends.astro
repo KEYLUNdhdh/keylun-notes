@@ -36,6 +36,14 @@ function shuffleArray(array) {
 }
 
 const shuffledItems = shuffleArray(items);
+
+function getFriendInitials(title: string) {
+    return title
+        .trim()
+        .replace(/\s+/g, "")
+        .slice(0, 2)
+        .toUpperCase();
+}
 ---
 
 <GridLayout title={pageTitle} description={pageDescription} headings={allHeadings}>
@@ -57,8 +65,21 @@ const shuffledItems = shuffleArray(items);
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 my-4">
                 {shuffledItems.map((item) => (
                     <a href={item.siteurl} target="_blank" rel="noopener noreferrer" class="menu-card group flex flex-row items-center p-4 rounded-xl border transition-all duration-300 gap-4">
-                        <div class="icon-wrapper w-20 h-20 shrink-0 flex items-center justify-center rounded-full transition-all duration-300 overflow-hidden bg-zinc-200 dark:bg-zinc-900">
-                            <img src={item.imgurl} alt={item.title} class="w-full h-full object-cover transition duration-300 group-hover:scale-110" />
+                        <div class="icon-wrapper relative w-20 h-20 shrink-0 flex items-center justify-center rounded-full transition-all duration-300 overflow-hidden bg-zinc-200 dark:bg-zinc-900">
+                            <span class="friend-avatar-fallback absolute inset-0 flex items-center justify-center px-2 text-center text-lg font-bold leading-tight">
+                                {getFriendInitials(item.title)}
+                            </span>
+                            {item.imgurl && (
+                                <img
+                                    src={item.imgurl}
+                                    alt=""
+                                    referrerpolicy="no-referrer"
+                                    loading="lazy"
+                                    decoding="async"
+                                    class="friend-avatar-img absolute inset-0 w-full h-full object-cover transition duration-300 group-hover:scale-110"
+                                    onerror="this.style.display='none'"
+                                />
+                            )}
                         </div>
                         <div class="flex flex-col justify-center overflow-hidden">
                             <h2 class="text-lg font-bold text-neutral-900 dark:text-neutral-100 group-hover:text-(--primary) transition-colors duration-300 truncate">
@@ -103,6 +124,14 @@ const shuffledItems = shuffleArray(items);
     .icon-wrapper {
         background-color: color-mix(in oklch, var(--primary), transparent 85%);
         color: var(--primary);
+    }
+
+    .friend-avatar-fallback {
+        background: color-mix(in oklch, var(--primary), transparent 78%);
+    }
+
+    .friend-avatar-img {
+        background-color: color-mix(in oklch, var(--primary), transparent 85%);
     }
 
     .menu-card:hover {
