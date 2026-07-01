@@ -197,8 +197,8 @@ navbar:
                     "Albums"
                 - # 二级导航链接 - 动画 (预设)
                     "Anime"
-        - # 一级导航链接 - 好友
-            name: "好友"
+        - # 一级导航链接 - 友链
+            name: "友链"
             url: "/friends/"
             icon: "material-symbols:diversity-3"
             description: "朋友、站点和长期关注的创作者"

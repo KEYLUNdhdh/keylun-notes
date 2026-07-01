@@ -96,7 +96,7 @@ content:
             type: rich-text
 
       - name: friends_page
-        label: 好友页面说明
+        label: 友链页面说明
         type: file
         path: src/content/friends.md
         format: yaml-frontmatter
@@ -157,7 +157,7 @@ content:
     type: group
     items:
       - name: friends
-        label: 好友
+        label: 友链
         type: collection
         path: src/content/friends
         format: json
