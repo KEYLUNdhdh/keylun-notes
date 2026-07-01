@@ -206,6 +206,11 @@ content:
                     options:
                       media: site_audio
                     extensions: [mp3, m4a, wav, ogg, flac]
+                    required: false
+                  - name: externalUrl
+                    label: 外部音频链接或手填路径
+                    type: string
+                    required: false
                   - name: lrc
                     label: 歌词文件
                     type: file

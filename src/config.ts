@@ -127,6 +127,7 @@ export const footerConfig: FooterConfig = config.footer;
 export const particleConfig: ParticleConfig = config.particle;
 
 // 音乐播放器配置
+const localMusicPlaylist = musicPlayerOverride.local?.playlist ?? config.musicPlayer.local.playlist;
 export const musicPlayerConfig: MusicPlayerConfig = {
     ...config.musicPlayer,
     ...musicPlayerOverride,
@@ -137,7 +138,10 @@ export const musicPlayerConfig: MusicPlayerConfig = {
     local: {
         ...config.musicPlayer.local,
         ...(musicPlayerOverride.local ?? {}),
-        playlist: musicPlayerOverride.local?.playlist ?? config.musicPlayer.local.playlist,
+        playlist: localMusicPlaylist.map((track) => ({
+            ...track,
+            url: track.externalUrl?.trim() || track.url,
+        })),
     },
 };
 
