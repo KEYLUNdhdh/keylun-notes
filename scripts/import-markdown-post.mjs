@@ -1,6 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
+import os from "node:os";
+import { execFileSync } from "node:child_process";
 import yaml from "js-yaml";
 
 const repoRoot = process.cwd();
@@ -8,6 +10,7 @@ const postsDir = path.join(repoRoot, "src", "content", "posts");
 const importsDir = path.join(repoRoot, "src", "imports", "markdown");
 const payload = JSON.parse(process.env.PAGES_CMS_PAYLOAD || process.argv[2] || "{}");
 const inputs = payload.inputs || {};
+const localImageSources = new Set();
 
 function boolValue(value, fallback = false) {
     if (value === undefined || value === null || value === "") return fallback;
@@ -61,23 +64,93 @@ function normalizeMarkdownUrl(url) {
     return `https://raw.githubusercontent.com/${githubBlob[1]}/${githubBlob[2]}/${githubBlob[3]}`;
 }
 
+function isInside(parent, child) {
+    const relative = path.relative(parent, child);
+    return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
+}
+
+async function findMarkdownFile(directory) {
+    const entries = await fs.readdir(directory, { withFileTypes: true });
+    const candidates = [];
+
+    for (const entry of entries) {
+        const fullPath = path.join(directory, entry.name);
+        if (entry.isDirectory()) {
+            const nestedMarkdown = await findMarkdownFile(fullPath);
+            if (nestedMarkdown) candidates.push(nestedMarkdown);
+        } else if (/\.(md|markdown)$/i.test(entry.name)) {
+            candidates.push(fullPath);
+        }
+    }
+
+    candidates.sort((a, b) => {
+        const aName = path.basename(a).toLowerCase();
+        const bName = path.basename(b).toLowerCase();
+        if (aName === "index.md") return -1;
+        if (bName === "index.md") return 1;
+        if (aName === "readme.md") return -1;
+        if (bName === "readme.md") return 1;
+        return a.localeCompare(b);
+    });
+    return candidates[0];
+}
+
+async function extractZip(zipPath) {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "keylun-md-import-"));
+
+    if (process.platform === "win32") {
+        execFileSync("tar", ["-xf", zipPath, "-C", tempDir], { stdio: "inherit" });
+    } else {
+        execFileSync("unzip", ["-q", zipPath, "-d", tempDir], { stdio: "inherit" });
+    }
+
+    const markdownPath = await findMarkdownFile(tempDir);
+    if (!markdownPath) {
+        throw new Error("压缩包里没有找到 .md 或 .markdown 文件。");
+    }
+
+    return {
+        markdown: await fs.readFile(markdownPath, "utf8"),
+        localBaseDir: path.dirname(markdownPath),
+        localRootDir: tempDir,
+        sourcePath: zipPath,
+        cleanupDir: tempDir,
+    };
+}
+
 async function readMarkdownSource() {
-    if (inputs.markdown_text?.trim()) return inputs.markdown_text;
+    if (inputs.markdown_text?.trim()) {
+        return {
+            markdown: inputs.markdown_text,
+            markdownUrl: normalizeMarkdownUrl(inputs.markdown_url),
+        };
+    }
 
     const sourceUrl = normalizeMarkdownUrl(inputs.markdown_url);
     if (sourceUrl) {
         const res = await fetch(sourceUrl);
         if (!res.ok) throw new Error(`Markdown URL 下载失败：${res.status} ${sourceUrl}`);
-        return await res.text();
+        return {
+            markdown: await res.text(),
+            markdownUrl: sourceUrl,
+        };
     }
 
     const contextPath = payload.context?.path;
-    if (contextPath && /\.(md|markdown)$/i.test(contextPath)) {
+    if (contextPath && /\.(md|markdown|zip)$/i.test(contextPath)) {
         const fullPath = path.resolve(repoRoot, contextPath);
         if (!fullPath.startsWith(importsDir + path.sep)) {
             throw new Error(`只允许从 ${path.relative(repoRoot, importsDir)} 导入 Markdown`);
         }
-        return await fs.readFile(fullPath, "utf8");
+        if (/\.zip$/i.test(fullPath)) {
+            return await extractZip(fullPath);
+        }
+        return {
+            markdown: await fs.readFile(fullPath, "utf8"),
+            localBaseDir: path.dirname(fullPath),
+            localRootDir: importsDir,
+            sourcePath: fullPath,
+        };
     }
 
     throw new Error("请填写 Markdown 原文、Markdown URL，或在 Markdown 导入媒体库中触发导入动作。");
@@ -104,13 +177,82 @@ function isSkippableImage(url) {
         url.startsWith("#") ||
         url.startsWith("data:") ||
         url.startsWith("mailto:") ||
-        url.startsWith("/assets/") ||
-        url.startsWith("./") ||
-        url.startsWith("../")
+        url.startsWith("/assets/")
     );
 }
 
-async function downloadImages(body, markdownUrl, postSlug) {
+function getLocalImageContentType(filePath) {
+    const ext = path.extname(filePath).toLowerCase();
+    if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
+    if (ext === ".png") return "image/png";
+    if (ext === ".webp") return "image/webp";
+    if (ext === ".gif") return "image/gif";
+    if (ext === ".svg") return "image/svg+xml";
+    if (ext === ".avif") return "image/avif";
+    return "";
+}
+
+async function readLocalImage(source, sourceContext) {
+    if (!sourceContext.localBaseDir || !sourceContext.localRootDir) return null;
+    if (/^[a-z][a-z0-9+.-]*:/i.test(source) || source.startsWith("/")) return null;
+
+    const localPath = path.resolve(sourceContext.localBaseDir, decodeURIComponent(source));
+    if (!isInside(sourceContext.localRootDir, localPath)) {
+        console.warn(`跳过超出导入目录的图片：${source}`);
+        return null;
+    }
+
+    const stat = await fs.stat(localPath).catch(() => null);
+    if (!stat?.isFile()) {
+        console.warn(`跳过不存在的本地图片：${source}`);
+        return null;
+    }
+
+    const contentType = getLocalImageContentType(localPath);
+    if (!contentType.startsWith("image/")) {
+        console.warn(`跳过非图片本地文件：${source}`);
+        return null;
+    }
+
+    localImageSources.add(localPath);
+    return {
+        buffer: await fs.readFile(localPath),
+        contentType,
+        resolvedUrl: localPath,
+    };
+}
+
+async function readRemoteImage(source, sourceContext) {
+    let resolvedUrl = source;
+    if (!/^https?:\/\//i.test(source)) {
+        if (!sourceContext.markdownUrl) return null;
+        resolvedUrl = new URL(source, sourceContext.markdownUrl).toString();
+    }
+
+    const res = await fetch(resolvedUrl, {
+        headers: {
+            "User-Agent": "keylun-notes-md-importer/1.0",
+        },
+    });
+    if (!res.ok) {
+        console.warn(`跳过下载失败的图片：${res.status} ${resolvedUrl}`);
+        return null;
+    }
+
+    const contentType = res.headers.get("content-type") || "";
+    if (!contentType.startsWith("image/")) {
+        console.warn(`跳过非图片资源：${contentType} ${resolvedUrl}`);
+        return null;
+    }
+
+    return {
+        buffer: Buffer.from(await res.arrayBuffer()),
+        contentType,
+        resolvedUrl,
+    };
+}
+
+async function downloadImages(body, sourceContext, postSlug) {
     const shouldDownload = boolValue(inputs.download_images, true);
     if (!shouldDownload) return body;
 
@@ -125,29 +267,10 @@ async function downloadImages(body, markdownUrl, postSlug) {
         const source = rawUrl.trim();
         if (isSkippableImage(source)) continue;
 
-        let resolvedUrl = source;
-        if (!/^https?:\/\//i.test(source)) {
-            if (!markdownUrl) continue;
-            resolvedUrl = new URL(source, markdownUrl).toString();
-        }
+        const image = await readLocalImage(source, sourceContext) ?? await readRemoteImage(source, sourceContext);
+        if (!image) continue;
 
-        const res = await fetch(resolvedUrl, {
-            headers: {
-                "User-Agent": "keylun-notes-md-importer/1.0",
-            },
-        });
-        if (!res.ok) {
-            console.warn(`跳过下载失败的图片：${res.status} ${resolvedUrl}`);
-            continue;
-        }
-
-        const contentType = res.headers.get("content-type") || "";
-        if (!contentType.startsWith("image/")) {
-            console.warn(`跳过非图片资源：${contentType} ${resolvedUrl}`);
-            continue;
-        }
-
-        const buffer = Buffer.from(await res.arrayBuffer());
+        const { buffer, contentType, resolvedUrl } = image;
         const hash = crypto.createHash("sha1").update(buffer).digest("hex").slice(0, 8);
         const ext = getImageExtension(contentType, resolvedUrl);
         const filename = `image-${String(index).padStart(2, "0")}-${hash}${ext}`;
@@ -176,9 +299,9 @@ function buildFrontmatter(data) {
     }).trim();
 }
 
-const markdownUrl = normalizeMarkdownUrl(inputs.markdown_url);
-const rawMarkdown = await readMarkdownSource();
-const parsed = parseFrontmatter(rawMarkdown);
+const sourceContext = await readMarkdownSource();
+sourceContext.markdown = sourceContext.markdown.replace(/^\uFEFF/, "");
+const parsed = parseFrontmatter(sourceContext.markdown);
 const nowDate = toDateString();
 const title = inputs.title?.trim() || parsed.data.title || extractTitle(parsed.body);
 const slug = slugify(inputs.slug || parsed.data.routeName || title);
@@ -187,7 +310,7 @@ const filename = `${published}-${slug}.md`;
 const outputPath = path.join(postsDir, filename);
 
 let body = parsed.body.trimStart();
-body = await downloadImages(body, markdownUrl, slug);
+body = await downloadImages(body, sourceContext, slug);
 
 const frontmatter = {
     ...parsed.data,
@@ -205,11 +328,20 @@ const frontmatter = {
 await fs.mkdir(postsDir, { recursive: true });
 await fs.writeFile(outputPath, `---\n${buildFrontmatter(frontmatter)}\n---\n${body}\n`, "utf8");
 
-if (payload.context?.path && boolValue(inputs.delete_source, true)) {
-    const sourcePath = path.resolve(repoRoot, payload.context.path);
+if (sourceContext.sourcePath && boolValue(inputs.delete_source, true)) {
+    const sourcePath = path.resolve(repoRoot, sourceContext.sourcePath);
     if (sourcePath.startsWith(importsDir + path.sep)) {
         await fs.rm(sourcePath, { force: true });
     }
+    for (const imagePath of localImageSources) {
+        if (imagePath.startsWith(importsDir + path.sep)) {
+            await fs.rm(imagePath, { force: true });
+        }
+    }
+}
+
+if (sourceContext.cleanupDir) {
+    await fs.rm(sourceContext.cleanupDir, { recursive: true, force: true });
 }
 
 console.log(`Imported Markdown post: ${path.relative(repoRoot, outputPath)}`);

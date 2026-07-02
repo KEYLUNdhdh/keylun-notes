@@ -20,7 +20,7 @@ media:
     label: Markdown 导入
     input: src/imports/markdown
     output: /src/imports/markdown
-    extensions: [md, markdown]
+    extensions: [md, markdown, zip]
     actions:
       - name: import-markdown-media
         label: 导入为文章
@@ -28,7 +28,7 @@ media:
         ref: current
         confirm:
           title: 导入 Markdown？
-          message: 将把这个 Markdown 文件转换为正式文章，并下载其中可访问的远程图片。
+          message: 可上传单个 Markdown，或上传包含 Markdown 与图片文件夹的 zip 包；导入时会自动匹配相对图片并下载远程图片。
           button: 开始导入
         fields:
           - name: title
@@ -67,7 +67,7 @@ actions:
     ref: current
     confirm:
       title: 导入 Markdown 文章？
-      message: 可以粘贴 Markdown 原文，或填写 Markdown 原始 URL。远程图片会被下载到文章资源目录。
+      message: 可以粘贴 Markdown 原文，或填写 Markdown 原始 URL。远程图片会被下载到文章资源目录；本地图片请用 Markdown 导入媒体库上传 zip 包。
       button: 开始导入
     fields:
       - name: markdown_url
