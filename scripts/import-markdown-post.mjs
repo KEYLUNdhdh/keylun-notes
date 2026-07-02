@@ -8,6 +8,7 @@ import { createExtractorFromData } from "node-unrar-js";
 
 const repoRoot = process.cwd();
 const postsDir = path.join(repoRoot, "src", "content", "posts");
+const publicPostAssetsDir = path.join(repoRoot, "public", "assets", "posts");
 const importsDir = path.join(repoRoot, "imports", "markdown");
 const payload = JSON.parse(process.env.PAGES_CMS_PAYLOAD || process.argv[2] || "{}");
 const inputs = payload.inputs || {};
@@ -55,6 +56,15 @@ function parseFrontmatter(markdown) {
 function extractTitle(body, fallback) {
     const heading = body.match(/^#\s+(.+)$/m)?.[1]?.trim();
     return heading || fallback || "未命名文章";
+}
+
+function normalizeTitle(value) {
+    return String(value || "")
+        .trim()
+        .replace(/^#+\s+/, "")
+        .replace(/^\*\*(.*?)\*\*$/s, "$1")
+        .replace(/^__(.*?)__$/s, "$1")
+        .trim();
 }
 
 function normalizeMarkdownUrl(url) {
@@ -231,6 +241,33 @@ function isSkippableImage(url) {
     );
 }
 
+function parseImageTarget(rawTarget) {
+    const target = rawTarget.trim();
+    if (target.startsWith("<")) {
+        const endIndex = target.indexOf(">");
+        if (endIndex > 0) {
+            return {
+                source: target.slice(1, endIndex).trim(),
+                suffix: target.slice(endIndex + 1),
+            };
+        }
+    }
+
+    const imageTarget = target.match(/^(.+\.(?:jpg|jpeg|png|webp|gif|svg|avif)(?:[?#][^\s)]*)?)(\s+["'][\s\S]*["'])?$/i);
+    if (imageTarget) {
+        return {
+            source: imageTarget[1].trim(),
+            suffix: imageTarget[2] || "",
+        };
+    }
+
+    const [source = "", ...rest] = target.split(/\s+/);
+    return {
+        source: source.trim(),
+        suffix: rest.length ? ` ${rest.join(" ")}` : "",
+    };
+}
+
 function getLocalImageContentType(filePath) {
     const ext = path.extname(filePath).toLowerCase();
     if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
@@ -306,15 +343,15 @@ async function downloadImages(body, sourceContext, postSlug) {
     const shouldDownload = boolValue(inputs.download_images, true);
     if (!shouldDownload) return body;
 
-    const assetsDirName = `${postSlug}-assets`;
-    const assetsDir = path.join(postsDir, assetsDirName);
-    const imagePattern = /!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g;
+    const assetsDirName = postSlug;
+    const assetsDir = path.join(publicPostAssetsDir, assetsDirName);
+    const imagePattern = /!\[([^\]]*)\]\(([^)\n]+)\)/g;
     const replacements = [];
     let index = 1;
 
     for (const match of body.matchAll(imagePattern)) {
-        const [fullMatch, alt, rawUrl] = match;
-        const source = rawUrl.trim();
+        const [fullMatch, alt, rawTarget] = match;
+        const { source, suffix } = parseImageTarget(rawTarget);
         if (isSkippableImage(source)) continue;
 
         const image = await readLocalImage(source, sourceContext) ?? await readRemoteImage(source, sourceContext);
@@ -329,7 +366,7 @@ async function downloadImages(body, sourceContext, postSlug) {
 
         replacements.push({
             from: fullMatch,
-            to: `![${alt}](./${assetsDirName}/${filename})`,
+            to: `![${alt}](/assets/posts/${assetsDirName}/${filename}${suffix})`,
         });
         index += 1;
     }
@@ -339,6 +376,16 @@ async function downloadImages(body, sourceContext, postSlug) {
         nextBody = nextBody.replace(item.from, item.to);
     }
     return nextBody;
+}
+
+function normalizeMathBlocks(body) {
+    return body.replace(/\$\$\r?\n([\s\S]*?)\r?\n\$\$/g, (match, content) => {
+        const normalizedContent = content
+            .split(/\r?\n/)
+            .map((line) => line.replace(/,\s*\\\s*$/g, ",").replace(/\s+\\\s*$/g, ""))
+            .join("\n");
+        return `$$\n${normalizedContent}\n$$`;
+    });
 }
 
 function buildFrontmatter(data) {
@@ -353,13 +400,14 @@ const sourceContext = await readMarkdownSource();
 sourceContext.markdown = sourceContext.markdown.replace(/^\uFEFF/, "");
 const parsed = parseFrontmatter(sourceContext.markdown);
 const nowDate = toDateString();
-const title = inputs.title?.trim() || parsed.data.title || extractTitle(parsed.body);
+const title = normalizeTitle(inputs.title || parsed.data.title || extractTitle(parsed.body));
 const slug = slugify(inputs.slug || parsed.data.routeName || title);
 const published = toDateString(inputs.published || parsed.data.published || nowDate);
 const filename = `${published}-${slug}.md`;
 const outputPath = path.join(postsDir, filename);
 
 let body = parsed.body.trimStart();
+body = normalizeMathBlocks(body);
 body = await downloadImages(body, sourceContext, slug);
 
 const frontmatter = {

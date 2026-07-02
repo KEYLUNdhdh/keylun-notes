@@ -117,7 +117,7 @@ $$
 给定正整数 s，若二分图 B=(X\cup Y,E) 满足
 
 $$
-|Y|-|N_Y(u)|\le s\iff |\overline{N}_Y(u)| \le s \quad \forall u\in X,    
+|Y|-|N_Y(u)|\le s\iff |\overline{N}_Y(u)| \le s \quad \forall u\in X,
 $$
 
 以及
@@ -193,7 +193,7 @@ TBS 问题是 NP-hard。
 
 #### 第二步：带规模约束的最大 biclique 规约到 BISPLEX/TBS
 
-![Screenshot 2026-07-02 142725](<Screenshot 2026-07-02 142725.png>)
+![Screenshot 2026-07-02 142725](/assets/posts/大规模二分图上的高效-top-k-s-biplex-搜索/image-01-e26f251a.png)
 
 定义判定问题：
 
