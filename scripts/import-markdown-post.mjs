@@ -270,6 +270,25 @@ function parseImageTarget(rawTarget) {
     };
 }
 
+function safeDecodeURIComponent(value) {
+    try {
+        return decodeURIComponent(value);
+    } catch {
+        return value;
+    }
+}
+
+function cleanLocalImageSource(source) {
+    return safeDecodeURIComponent(source)
+        .replace(/\\/g, "/")
+        .replace(/[?#].*$/, "")
+        .trim();
+}
+
+function normalizeLookupName(value) {
+    return path.basename(cleanLocalImageSource(value)).normalize("NFKC").toLowerCase();
+}
+
 function getLocalImageContentType(filePath) {
     const ext = path.extname(filePath).toLowerCase();
     if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
@@ -281,21 +300,51 @@ function getLocalImageContentType(filePath) {
     return "";
 }
 
-async function readLocalImage(source, sourceContext) {
-    if (!sourceContext.localBaseDir || !sourceContext.localRootDir) return null;
-    if (/^[a-z][a-z0-9+.-]*:/i.test(source) || source.startsWith("/")) return null;
+async function findFilesRecursive(directory) {
+    const entries = await fs.readdir(directory, { withFileTypes: true }).catch(() => []);
+    const files = [];
 
-    const localPath = path.resolve(sourceContext.localBaseDir, decodeURIComponent(source));
-    if (!isInside(sourceContext.localRootDir, localPath)) {
-        console.warn(`跳过超出导入目录的图片：${source}`);
-        return null;
+    for (const entry of entries) {
+        const fullPath = path.join(directory, entry.name);
+        if (entry.isDirectory()) {
+            files.push(...await findFilesRecursive(fullPath));
+        } else if (entry.isFile()) {
+            files.push(fullPath);
+        }
     }
 
+    return files;
+}
+
+async function findLocalImageByBasename(source, sourceContext) {
+    if (!sourceContext.localRootDir) return null;
+
+    const targetName = normalizeLookupName(source);
+    if (!targetName) return null;
+
+    const baseDir = sourceContext.localBaseDir || sourceContext.localRootDir;
+    const candidates = (await findFilesRecursive(sourceContext.localRootDir))
+        .filter((filePath) => {
+            const contentType = getLocalImageContentType(filePath);
+            return contentType.startsWith("image/") && normalizeLookupName(filePath) === targetName;
+        })
+        .sort((a, b) => {
+            const aDistance = path.relative(baseDir, a).split(path.sep).length;
+            const bDistance = path.relative(baseDir, b).split(path.sep).length;
+            return aDistance - bDistance || a.localeCompare(b);
+        });
+
+    if (candidates.length > 0) {
+        console.warn(`自动匹配本地图片：${source} -> ${path.relative(sourceContext.localRootDir, candidates[0])}`);
+        return candidates[0];
+    }
+
+    return null;
+}
+
+async function readLocalImageFile(localPath, source) {
     const stat = await fs.stat(localPath).catch(() => null);
-    if (!stat?.isFile()) {
-        console.warn(`跳过不存在的本地图片：${source}`);
-        return null;
-    }
+    if (!stat?.isFile()) return null;
 
     const contentType = getLocalImageContentType(localPath);
     if (!contentType.startsWith("image/")) {
@@ -309,6 +358,31 @@ async function readLocalImage(source, sourceContext) {
         contentType,
         resolvedUrl: localPath,
     };
+}
+
+async function readLocalImageAuto(source, sourceContext) {
+    if (!sourceContext.localBaseDir || !sourceContext.localRootDir) return null;
+    if (/^[a-z][a-z0-9+.-]*:/i.test(source) || source.startsWith("/")) return null;
+
+    const cleanedSource = cleanLocalImageSource(source);
+    const localPath = path.resolve(sourceContext.localBaseDir, cleanedSource);
+
+    if (isInside(sourceContext.localRootDir, localPath)) {
+        const directImage = await readLocalImageFile(localPath, source);
+        if (directImage) return directImage;
+    } else {
+        console.warn(`跳过超出导入目录的图片：${source}`);
+    }
+
+    const fallbackPath = await findLocalImageByBasename(source, sourceContext);
+    if (fallbackPath) return await readLocalImageFile(fallbackPath, source);
+
+    console.warn(`未找到本地图片，保留原引用：${source}`);
+    return null;
+}
+
+async function readLocalImage(source, sourceContext) {
+    return await readLocalImageAuto(source, sourceContext);
 }
 
 async function readRemoteImage(source, sourceContext) {
@@ -379,22 +453,16 @@ async function downloadImages(body, sourceContext, postSlug) {
     return nextBody;
 }
 
-function normalizeMathBlocks(body) {
-    return body.replace(/\$\$\r?\n([\s\S]*?)\r?\n\$\$/g, (match, content) => {
-        const normalizedContent = content
-            .split(/\r?\n/)
-            .map((line) => line.replace(/,\s*\\\s*$/g, ",").replace(/\s+\\\s*$/g, ""))
-            .join("\n");
-        return `$$\n${normalizedContent}\n$$`;
-    });
+function encodeUnresolvedImageTarget(source, suffix) {
+    if (source.includes(" ") || source.includes("(") || source.includes(")")) {
+        return `<${source}>${suffix}`;
+    }
+    return `${source}${suffix}`;
 }
 
-function assertNoUnresolvedLocalImages(body) {
-    const unresolvedImages = [];
-
-    for (const match of body.matchAll(imagePattern)) {
-        const [, alt, rawTarget] = match;
-        const { source } = parseImageTarget(rawTarget);
+function normalizeRemainingImageTargets(body) {
+    return body.replace(imagePattern, (fullMatch, alt, rawTarget) => {
+        const { source, suffix } = parseImageTarget(rawTarget);
 
         if (
             !source ||
@@ -404,53 +472,86 @@ function assertNoUnresolvedLocalImages(body) {
             source.startsWith("/assets/") ||
             /^https?:\/\//i.test(source)
         ) {
-            continue;
+            return fullMatch;
         }
 
-        unresolvedImages.push(alt ? `${alt}: ${source}` : source);
-    }
+        const normalizedSource = cleanLocalImageSource(source);
+        return `![${alt}](${encodeUnresolvedImageTarget(normalizedSource, suffix)})`;
+    });
+}
 
-    if (unresolvedImages.length > 0) {
-        throw new Error(`导入后仍有未迁移的本地图片路径：${unresolvedImages.join(", ")}`);
+function katexCanRender(content, displayMode) {
+    try {
+        katex.renderToString(content, {
+            displayMode,
+            throwOnError: true,
+            strict: "warn",
+        });
+        return true;
+    } catch {
+        return false;
     }
 }
 
-function assertMathIsRenderable(body) {
-    const errors = [];
-    const displayMathPattern = /\$\$\r?\n([\s\S]*?)\r?\n\$\$/g;
-    const inlineMathPattern = /\\\(([\s\S]*?)\\\)/g;
+function stripTrailingSingleBackslash(line) {
+    const trimmed = line.replace(/[ \t]+$/g, "");
+    const slashMatch = trimmed.match(/\\+$/);
+    if (!slashMatch || slashMatch[0].length % 2 === 0) return line;
+    return trimmed.slice(0, -1).replace(/[ \t]+$/g, "").replace(/,\s*$/g, ",");
+}
 
-    for (const match of body.matchAll(displayMathPattern)) {
-        const content = match[1].trim();
-        if (!content) continue;
-        try {
-            katex.renderToString(content, {
-                displayMode: true,
-                throwOnError: true,
-                strict: "warn",
-            });
-        } catch (error) {
-            errors.push(`块级公式：${content.slice(0, 120)} => ${error.message}`);
+function balanceLatexBraces(content) {
+    let balance = 0;
+    for (let index = 0; index < content.length; index += 1) {
+        const char = content[index];
+        const escaped = index > 0 && content[index - 1] === "\\";
+        if (escaped) continue;
+        if (char === "{") balance += 1;
+        if (char === "}") balance -= 1;
+    }
+
+    if (balance > 0) return `${content}${"}".repeat(balance)}`;
+    return content;
+}
+
+function repairMathContent(content) {
+    const withoutDangerousLineEndings = content
+        .replace(/\r\n/g, "\n")
+        .split("\n")
+        .map(stripTrailingSingleBackslash)
+        .join("\n")
+        .trim();
+
+    return balanceLatexBraces(withoutDangerousLineEndings);
+}
+
+function toTexCodeBlock(content) {
+    const safeContent = content.replace(/```/g, "'''");
+    return `\n\`\`\`tex\n${safeContent}\n\`\`\`\n`;
+}
+
+function normalizeMathBlocks(body) {
+    return body.replace(/\$\$\r?\n([\s\S]*?)\r?\n\$\$/g, (match, content) => {
+        const normalizedContent = repairMathContent(content);
+        if (katexCanRender(normalizedContent, true)) {
+            return `$$\n${normalizedContent}\n$$`;
         }
-    }
 
-    for (const match of body.matchAll(inlineMathPattern)) {
-        const content = match[1].trim();
-        if (!content) continue;
-        try {
-            katex.renderToString(content, {
-                displayMode: false,
-                throwOnError: true,
-                strict: "warn",
-            });
-        } catch (error) {
-            errors.push(`行内公式：${content.slice(0, 120)} => ${error.message}`);
+        console.warn(`公式仍无法渲染，已降级为 TeX 代码块：${normalizedContent.slice(0, 120)}`);
+        return toTexCodeBlock(normalizedContent);
+    });
+}
+
+function normalizeInlineMath(body) {
+    return body.replace(/\\\(([\s\S]*?)\\\)/g, (match, content) => {
+        const normalizedContent = repairMathContent(content);
+        if (katexCanRender(normalizedContent, false)) {
+            return `\\(${normalizedContent}\\)`;
         }
-    }
 
-    if (errors.length > 0) {
-        throw new Error(`导入后的公式无法渲染：\n${errors.join("\n")}`);
-    }
+        console.warn(`行内公式仍无法渲染，已降级为代码：${normalizedContent.slice(0, 120)}`);
+        return `\`${normalizedContent.replace(/`/g, "'")}\``;
+    });
 }
 
 function buildFrontmatter(data) {
@@ -473,9 +574,9 @@ const outputPath = path.join(postsDir, filename);
 
 let body = parsed.body.trimStart();
 body = normalizeMathBlocks(body);
+body = normalizeInlineMath(body);
 body = await downloadImages(body, sourceContext, slug);
-assertNoUnresolvedLocalImages(body);
-assertMathIsRenderable(body);
+body = normalizeRemainingImageTargets(body);
 
 const frontmatter = {
     ...parsed.data,
