@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import os from "node:os";
 import { execFileSync } from "node:child_process";
 import yaml from "js-yaml";
+import { createExtractorFromData } from "node-unrar-js";
 
 const repoRoot = process.cwd();
 const postsDir = path.join(repoRoot, "src", "content", "posts");
@@ -98,24 +99,70 @@ async function findMarkdownFile(directory) {
 async function extractZip(zipPath) {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "keylun-md-import-"));
 
-    if (process.platform === "win32") {
-        execFileSync("tar", ["-xf", zipPath, "-C", tempDir], { stdio: "inherit" });
-    } else {
-        execFileSync("unzip", ["-q", zipPath, "-d", tempDir], { stdio: "inherit" });
-    }
+    try {
+        if (process.platform === "win32") {
+            execFileSync("tar", ["-xf", zipPath, "-C", tempDir], { stdio: "inherit" });
+        } else {
+            execFileSync("unzip", ["-q", zipPath, "-d", tempDir], { stdio: "inherit" });
+        }
 
-    const markdownPath = await findMarkdownFile(tempDir);
-    if (!markdownPath) {
-        throw new Error("压缩包里没有找到 .md 或 .markdown 文件。");
-    }
+        const markdownPath = await findMarkdownFile(tempDir);
+        if (!markdownPath) {
+            throw new Error("压缩包里没有找到 .md 或 .markdown 文件。");
+        }
 
-    return {
-        markdown: await fs.readFile(markdownPath, "utf8"),
-        localBaseDir: path.dirname(markdownPath),
-        localRootDir: tempDir,
-        sourcePath: zipPath,
-        cleanupDir: tempDir,
-    };
+        return {
+            markdown: await fs.readFile(markdownPath, "utf8"),
+            localBaseDir: path.dirname(markdownPath),
+            localRootDir: tempDir,
+            sourcePath: zipPath,
+            cleanupDir: tempDir,
+        };
+    } catch (error) {
+        await fs.rm(tempDir, { recursive: true, force: true });
+        throw error;
+    }
+}
+
+async function extractRar(rarPath) {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "keylun-md-import-"));
+
+    try {
+        const archiveData = await fs.readFile(rarPath);
+        const archiveBuffer = archiveData.buffer.slice(archiveData.byteOffset, archiveData.byteOffset + archiveData.byteLength);
+        const extractor = await createExtractorFromData({ data: archiveBuffer });
+        const extracted = extractor.extract();
+
+        for (const file of extracted.files) {
+            if (file.fileHeader.flags.directory || !file.extraction) continue;
+
+            const entryPath = file.fileHeader.name.replace(/\\/g, "/");
+            const outputPath = path.resolve(tempDir, entryPath);
+            if (!isInside(tempDir, outputPath)) {
+                console.warn(`跳过超出压缩包目录的文件：${entryPath}`);
+                continue;
+            }
+
+            await fs.mkdir(path.dirname(outputPath), { recursive: true });
+            await fs.writeFile(outputPath, Buffer.from(file.extraction));
+        }
+
+        const markdownPath = await findMarkdownFile(tempDir);
+        if (!markdownPath) {
+            throw new Error("压缩包里没有找到 .md 或 .markdown 文件。");
+        }
+
+        return {
+            markdown: await fs.readFile(markdownPath, "utf8"),
+            localBaseDir: path.dirname(markdownPath),
+            localRootDir: tempDir,
+            sourcePath: rarPath,
+            cleanupDir: tempDir,
+        };
+    } catch (error) {
+        await fs.rm(tempDir, { recursive: true, force: true });
+        throw error;
+    }
 }
 
 async function readMarkdownSource() {
@@ -137,13 +184,16 @@ async function readMarkdownSource() {
     }
 
     const contextPath = payload.context?.path;
-    if (contextPath && /\.(md|markdown|zip)$/i.test(contextPath)) {
+    if (contextPath && /\.(md|markdown|zip|rar)$/i.test(contextPath)) {
         const fullPath = path.resolve(repoRoot, contextPath);
         if (!fullPath.startsWith(importsDir + path.sep)) {
             throw new Error(`只允许从 ${path.relative(repoRoot, importsDir)} 导入 Markdown`);
         }
         if (/\.zip$/i.test(fullPath)) {
             return await extractZip(fullPath);
+        }
+        if (/\.rar$/i.test(fullPath)) {
+            return await extractRar(fullPath);
         }
         return {
             markdown: await fs.readFile(fullPath, "utf8"),
