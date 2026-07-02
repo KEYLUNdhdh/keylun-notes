@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import os from "node:os";
 import { execFileSync } from "node:child_process";
 import yaml from "js-yaml";
+import katex from "katex";
 import { createExtractorFromData } from "node-unrar-js";
 
 const repoRoot = process.cwd();
@@ -13,6 +14,7 @@ const importsDir = path.join(repoRoot, "imports", "markdown");
 const payload = JSON.parse(process.env.PAGES_CMS_PAYLOAD || process.argv[2] || "{}");
 const inputs = payload.inputs || {};
 const localImageSources = new Set();
+const imagePattern = /!\[([^\]]*)\]\(([^)\n]+)\)/g;
 
 function boolValue(value, fallback = false) {
     if (value === undefined || value === null || value === "") return fallback;
@@ -345,7 +347,6 @@ async function downloadImages(body, sourceContext, postSlug) {
 
     const assetsDirName = postSlug;
     const assetsDir = path.join(publicPostAssetsDir, assetsDirName);
-    const imagePattern = /!\[([^\]]*)\]\(([^)\n]+)\)/g;
     const replacements = [];
     let index = 1;
 
@@ -388,6 +389,70 @@ function normalizeMathBlocks(body) {
     });
 }
 
+function assertNoUnresolvedLocalImages(body) {
+    const unresolvedImages = [];
+
+    for (const match of body.matchAll(imagePattern)) {
+        const [, alt, rawTarget] = match;
+        const { source } = parseImageTarget(rawTarget);
+
+        if (
+            !source ||
+            source.startsWith("#") ||
+            source.startsWith("data:") ||
+            source.startsWith("mailto:") ||
+            source.startsWith("/assets/") ||
+            /^https?:\/\//i.test(source)
+        ) {
+            continue;
+        }
+
+        unresolvedImages.push(alt ? `${alt}: ${source}` : source);
+    }
+
+    if (unresolvedImages.length > 0) {
+        throw new Error(`导入后仍有未迁移的本地图片路径：${unresolvedImages.join(", ")}`);
+    }
+}
+
+function assertMathIsRenderable(body) {
+    const errors = [];
+    const displayMathPattern = /\$\$\r?\n([\s\S]*?)\r?\n\$\$/g;
+    const inlineMathPattern = /\\\(([\s\S]*?)\\\)/g;
+
+    for (const match of body.matchAll(displayMathPattern)) {
+        const content = match[1].trim();
+        if (!content) continue;
+        try {
+            katex.renderToString(content, {
+                displayMode: true,
+                throwOnError: true,
+                strict: "warn",
+            });
+        } catch (error) {
+            errors.push(`块级公式：${content.slice(0, 120)} => ${error.message}`);
+        }
+    }
+
+    for (const match of body.matchAll(inlineMathPattern)) {
+        const content = match[1].trim();
+        if (!content) continue;
+        try {
+            katex.renderToString(content, {
+                displayMode: false,
+                throwOnError: true,
+                strict: "warn",
+            });
+        } catch (error) {
+            errors.push(`行内公式：${content.slice(0, 120)} => ${error.message}`);
+        }
+    }
+
+    if (errors.length > 0) {
+        throw new Error(`导入后的公式无法渲染：\n${errors.join("\n")}`);
+    }
+}
+
 function buildFrontmatter(data) {
     return yaml.dump(data, {
         lineWidth: 100,
@@ -409,6 +474,8 @@ const outputPath = path.join(postsDir, filename);
 let body = parsed.body.trimStart();
 body = normalizeMathBlocks(body);
 body = await downloadImages(body, sourceContext, slug);
+assertNoUnresolvedLocalImages(body);
+assertMathIsRenderable(body);
 
 const frontmatter = {
     ...parsed.data,
