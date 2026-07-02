@@ -525,32 +525,25 @@ function repairMathContent(content) {
     return balanceLatexBraces(withoutDangerousLineEndings);
 }
 
-function toTexCodeBlock(content) {
-    const safeContent = content.replace(/```/g, "'''");
-    return `\n\`\`\`tex\n${safeContent}\n\`\`\`\n`;
-}
-
 function normalizeMathBlocks(body) {
     return body.replace(/\$\$\r?\n([\s\S]*?)\r?\n\$\$/g, (match, content) => {
         const normalizedContent = repairMathContent(content);
-        if (katexCanRender(normalizedContent, true)) {
-            return `$$\n${normalizedContent}\n$$`;
+        if (!katexCanRender(normalizedContent, true)) {
+            console.warn(`块级公式仍无法渲染，已保留 $$ 边界：${normalizedContent.slice(0, 120)}`);
         }
 
-        console.warn(`公式仍无法渲染，已降级为 TeX 代码块：${normalizedContent.slice(0, 120)}`);
-        return toTexCodeBlock(normalizedContent);
+        return `$$\n${normalizedContent}\n$$`;
     });
 }
 
 function normalizeInlineMath(body) {
     return body.replace(/\\\(([\s\S]*?)\\\)/g, (match, content) => {
         const normalizedContent = repairMathContent(content);
-        if (katexCanRender(normalizedContent, false)) {
-            return `\\(${normalizedContent}\\)`;
+        if (!katexCanRender(normalizedContent, false)) {
+            console.warn(`行内公式仍无法渲染，已保留 $ 边界：${normalizedContent.slice(0, 120)}`);
         }
 
-        console.warn(`行内公式仍无法渲染，已降级为代码：${normalizedContent.slice(0, 120)}`);
-        return `\`${normalizedContent.replace(/`/g, "'")}\``;
+        return `$${normalizedContent}$`;
     });
 }
 
