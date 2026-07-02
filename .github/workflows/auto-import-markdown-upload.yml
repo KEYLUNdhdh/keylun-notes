@@ -1,0 +1,71 @@
+name: Auto Import Markdown Upload
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "imports/markdown/**"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: auto-import-markdown-upload
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.14.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Import uploaded Markdown bundles
+        run: |
+          set -euo pipefail
+
+          mapfile -t files < <(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" -- "imports/markdown/**" | grep -Ei '\.(md|markdown|zip|rar)$' || true)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No Markdown import files changed."
+            exit 0
+          fi
+
+          for file in "${files[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "Skipping deleted file: $file"
+              continue
+            fi
+
+            payload="$(node -e 'console.log(JSON.stringify({ context: { path: process.argv[1] }, inputs: { delete_source: true } }))' "$file")"
+            PAGES_CMS_PAYLOAD="$payload" node scripts/import-markdown-post.mjs
+          done
+
+      - name: Commit imported posts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/content/posts imports/markdown
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "Auto import Markdown upload"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

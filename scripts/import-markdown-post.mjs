@@ -8,7 +8,7 @@ import { createExtractorFromData } from "node-unrar-js";
 
 const repoRoot = process.cwd();
 const postsDir = path.join(repoRoot, "src", "content", "posts");
-const importsDir = path.join(repoRoot, "src", "imports", "markdown");
+const importsDir = path.join(repoRoot, "imports", "markdown");
 const payload = JSON.parse(process.env.PAGES_CMS_PAYLOAD || process.argv[2] || "{}");
 const inputs = payload.inputs || {};
 const localImageSources = new Set();

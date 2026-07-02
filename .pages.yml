@@ -18,8 +18,8 @@ media:
     extensions: [mp3, m4a, wav, ogg, flac, lrc]
   - name: markdown_imports
     label: Markdown 导入
-    input: src/imports/markdown
-    output: /src/imports/markdown
+    input: imports/markdown
+    output: /imports/markdown
     extensions: [md, markdown, zip, rar]
     actions:
       - name: import-markdown-media
