@@ -16,6 +16,92 @@ media:
     input: public/assets/music
     output: /assets/music
     extensions: [mp3, m4a, wav, ogg, flac, lrc]
+  - name: markdown_imports
+    label: Markdown 导入
+    input: src/imports/markdown
+    output: /src/imports/markdown
+    extensions: [md, markdown]
+    actions:
+      - name: import-markdown-media
+        label: 导入为文章
+        workflow: import-markdown-post.yml
+        ref: current
+        confirm:
+          title: 导入 Markdown？
+          message: 将把这个 Markdown 文件转换为正式文章，并下载其中可访问的远程图片。
+          button: 开始导入
+        fields:
+          - name: title
+            label: 标题（可选，留空则读取 Markdown）
+            type: text
+            required: false
+          - name: slug
+            label: URL 名称（可选）
+            type: text
+            required: false
+          - name: category
+            label: 分类（可选）
+            type: text
+            required: false
+          - name: tags
+            label: 标签（逗号分隔，可选）
+            type: text
+            required: false
+          - name: download_images
+            label: 下载远程图片
+            type: checkbox
+            default: true
+          - name: draft
+            label: 作为草稿
+            type: checkbox
+            default: false
+          - name: delete_source
+            label: 导入成功后删除临时 Markdown
+            type: checkbox
+            default: true
+
+actions:
+  - name: import-markdown-post
+    label: 导入 Markdown 文章
+    workflow: import-markdown-post.yml
+    ref: current
+    confirm:
+      title: 导入 Markdown 文章？
+      message: 可以粘贴 Markdown 原文，或填写 Markdown 原始 URL。远程图片会被下载到文章资源目录。
+      button: 开始导入
+    fields:
+      - name: markdown_url
+        label: Markdown 原始 URL（可选）
+        type: text
+        required: false
+      - name: markdown_text
+        label: Markdown 原文（可选）
+        type: textarea
+        required: false
+      - name: title
+        label: 标题（可选，留空则读取 Markdown）
+        type: text
+        required: false
+      - name: slug
+        label: URL 名称（可选）
+        type: text
+        required: false
+      - name: category
+        label: 分类（可选）
+        type: text
+        required: false
+      - name: tags
+        label: 标签（逗号分隔，可选）
+        type: text
+        required: false
+      - name: download_images
+        label: 下载远程图片
+        type: checkbox
+        default: true
+      - name: draft
+        label: 作为草稿
+        type: checkbox
+        default: false
 
 content:
   - name: writing
