@@ -1,13 +1,16 @@
 ---
 title: 大规模二分图上的高效 Top-k s-biplex 搜索
-published: '2026-07-02'
-updated: '2026-07-02'
-description: ''
-cover: ''
+published: 2026-07-02
+updated: 2026-07-02
+description: 我准备做的第一个方向，偏传统算法
 coverInContent: false
-category: ''
-tags: []
+category: Algorithm
+tags:
+  - 图论
+  - Clique/Biclique
+  - s-plex/s-biplex
 draft: false
+pinned: false
 ---
 # 大规模二分图上的高效 Top-k s-biplex 搜索
 
@@ -30,13 +33,13 @@ $$
 对顶点集 $S\subseteq V$，定义
 
 $$
-N_S(u)=\{v\in S\mid (u,v)\in E\}
+N_S(u)=v\in S\mid (u,v)\in E
 $$
 
 为 $u$ 在 $S$ 中的邻居集合，定义
 
 $$
-\overline N_S(u)=\{v\in S\mid (u,v)\in L\times R\setminus E\}
+\overline N_S(u)=v\in S\mid (u,v)\in L\times R\setminus E
 $$
 
 为 $u$ 在 $S$ 中的非邻居集合。上下文明确时，$N_V(u)$ 简记为 $N(u)$。
@@ -170,7 +173,7 @@ $$
 目标是找出规模最大的 $k$ 个顶点子集 $S⊆V$，使：
 
 1. $G[S]$ 是极大 s-biplex；
-2.  $|S∩L|≥θL$，$|S∩R|≥θR$。
+2. $|S∩L|≥θL$，$|S∩R|≥θR$。
 
 当  $k=1$ 时，TBS 等价于在规模约束下寻找最大 s-biplex。
 
@@ -234,5 +237,4 @@ $$
 反之，若 $G'$ 中存在满足规模要求的 $s$-biplex，可以证明在不减小两侧规模的条件下，把所有复制顶点补入该解；随后利用遗传性删去多余原始顶点，使总大小恰为 $\alpha'$。此时至少保留 $k_L$ 个原始左侧顶点和 $k_R$ 个原始右侧顶点。由于每个原始顶点允许的 $s$ 个非邻居已全部对应复制副本，原始左右顶点之间必须完全相连，从而在原图中得到大小为 $\alpha$ 的 biclique。
 
 因此，BICLIQUE 与构造后的 BISPLEX 等价，CMVC 可在多项式时间内规约到 TBS，所以 TBS 为 NP-hard。证毕。
-
 
