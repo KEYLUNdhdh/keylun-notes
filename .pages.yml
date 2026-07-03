@@ -261,6 +261,14 @@ content:
             label: 自动播放
             type: boolean
             required: false
+          - name: r2
+            label: R2 公共访问
+            type: object
+            fields:
+              - name: publicBaseUrl
+                label: R2 公开域名
+                type: string
+                required: false
           - name: local
             label: 本地音频
             type: object
@@ -286,6 +294,10 @@ content:
                     label: 封面链接
                     type: string
                     required: false
+                  - name: r2CoverKey
+                    label: R2 封面对象 Key
+                    type: string
+                    required: false
                   - name: url
                     label: 音频文件
                     type: file
@@ -297,12 +309,24 @@ content:
                     label: 外部音频链接或手填路径
                     type: string
                     required: false
+                  - name: r2AudioKey
+                    label: R2 音频对象 Key
+                    type: string
+                    required: false
                   - name: lrc
                     label: 歌词文件
                     type: file
                     options:
                       media: site_audio
                     extensions: [lrc]
+                    required: false
+                  - name: externalLrc
+                    label: 外部歌词链接
+                    type: string
+                    required: false
+                  - name: r2LrcKey
+                    label: R2 歌词对象 Key
+                    type: string
                     required: false
                   - name: duration
                     label: 时长（秒）

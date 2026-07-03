@@ -1,6 +1,9 @@
 {
   "enable": true,
   "mode": "local",
+  "r2": {
+    "publicBaseUrl": ""
+  },
   "meting": {
     "meting_api": "https://meting.spr-aachen.com/api",
     "server": "netease",

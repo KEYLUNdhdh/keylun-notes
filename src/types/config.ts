@@ -493,12 +493,20 @@ export type MusicPlayerTrack = {
     artist: string;
     // 封面
     cover: string;
+    // R2 封面对象 Key，配置 r2.publicBaseUrl 后可用
+    r2CoverKey?: string;
     // 路径
     url: string;
+    // R2 音频对象 Key，配置 r2.publicBaseUrl 后可用
+    r2AudioKey?: string;
     // 外部音频链接或手填路径，优先级高于 url
     externalUrl?: string;
     // 歌词
     lrc?: string;
+    // R2 歌词对象 Key，配置 r2.publicBaseUrl 后可用
+    r2LrcKey?: string;
+    // 外部歌词链接，优先级高于 lrc
+    externalLrc?: string;
     // 时长
     duration: number;
 };
@@ -510,6 +518,10 @@ export type MusicPlayerConfig = {
     enable: boolean;
     // 默认模式
     mode: "meting" | "local";
+    // R2 公共访问配置
+    r2?: {
+        publicBaseUrl?: string;
+    };
     // meting 模式专属配置
     meting: {
         // Meting API 地址

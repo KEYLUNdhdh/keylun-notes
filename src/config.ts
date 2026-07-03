@@ -128,9 +128,21 @@ export const particleConfig: ParticleConfig = config.particle;
 
 // 音乐播放器配置
 const localMusicPlaylist = musicPlayerOverride.local?.playlist ?? config.musicPlayer.local.playlist;
+const r2PublicBaseUrl = (musicPlayerOverride.r2?.publicBaseUrl ?? config.musicPlayer.r2?.publicBaseUrl ?? "")
+    .trim()
+    .replace(/\/+$/, "");
+const toR2Url = (key?: string) => {
+    const cleanKey = key?.trim().replace(/^\/+/, "");
+    if (!r2PublicBaseUrl || !cleanKey) return "";
+    return `${r2PublicBaseUrl}/${cleanKey.split("/").map(encodeURIComponent).join("/")}`;
+};
 export const musicPlayerConfig: MusicPlayerConfig = {
     ...config.musicPlayer,
     ...musicPlayerOverride,
+    r2: {
+        ...config.musicPlayer.r2,
+        ...(musicPlayerOverride.r2 ?? {}),
+    },
     meting: {
         ...config.musicPlayer.meting,
         ...(musicPlayerOverride.meting ?? {}),
@@ -140,7 +152,9 @@ export const musicPlayerConfig: MusicPlayerConfig = {
         ...(musicPlayerOverride.local ?? {}),
         playlist: localMusicPlaylist.map((track) => ({
             ...track,
-            url: track.externalUrl?.trim() || track.url,
+            cover: track.cover?.trim() || toR2Url(track.r2CoverKey),
+            url: track.externalUrl?.trim() || toR2Url(track.r2AudioKey) || track.url,
+            lrc: track.externalLrc?.trim() || toR2Url(track.r2LrcKey) || track.lrc,
         })),
     },
 };
