@@ -136,6 +136,11 @@ const toR2Url = (key?: string) => {
     if (!r2PublicBaseUrl || !cleanKey) return "";
     return `${r2PublicBaseUrl}/${cleanKey.split("/").map(encodeURIComponent).join("/")}`;
 };
+const toGeneratedR2LrcUrl = (track: { id: number | string; r2LrcKey?: string }) => {
+    if (!track.r2LrcKey?.trim()) return "";
+    const safeId = String(track.id).replace(/[^a-zA-Z0-9_-]+/g, "-");
+    return `/assets/music/r2-lyrics/r2-${safeId}.lrc`;
+};
 export const musicPlayerConfig: MusicPlayerConfig = {
     ...config.musicPlayer,
     ...musicPlayerOverride,
@@ -154,7 +159,7 @@ export const musicPlayerConfig: MusicPlayerConfig = {
             ...track,
             cover: track.cover?.trim() || toR2Url(track.r2CoverKey),
             url: track.externalUrl?.trim() || toR2Url(track.r2AudioKey) || track.url,
-            lrc: track.externalLrc?.trim() || toR2Url(track.r2LrcKey) || track.lrc,
+            lrc: toGeneratedR2LrcUrl(track) || track.externalLrc?.trim() || track.lrc,
         })),
     },
 };
