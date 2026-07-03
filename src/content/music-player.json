@@ -2,7 +2,7 @@
   "enable": true,
   "mode": "local",
   "r2": {
-    "publicBaseUrl": ""
+    "publicBaseUrl": "https://pub-92955f83fc7440f1b310e5efe59493f9.r2.dev"
   },
   "meting": {
     "meting_api": "https://meting.spr-aachen.com/api",
@@ -20,6 +20,18 @@
         "url": "assets/music/深海之息.m4a",
         "lrc": "assets/music/深海之息.lrc",
         "duration": 146
+      },
+      {
+        "id": 2,
+        "title": "Bury the light",
+        "r2AudioKey": "Music/【中字】21 Savage X J.Cole - a lot_音频.mp3",
+        "r2LrcKey": "Music/【完整歌曲】《鬼泣5特别版》维吉尔Theme曲 - Bury the Light（字幕付）_P1_Bury The Light_音频.mp3"
+      },
+      {
+        "id": 3,
+        "title": "A lot",
+        "artist": "21 savage",
+        "r2AudioKey": "Music/【中字】21 Savage X J.Cole - a lot_音频.mp3"
       }
     ]
   },
