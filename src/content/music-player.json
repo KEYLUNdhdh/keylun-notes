@@ -26,14 +26,16 @@
         "title": "Bury the light",
         "artist": "Victor Borba",
         "cover": "http://p1.music.126.net/1yMEfakS6S6wOU0ypvXg9g==/109951165698662473.jpg",
-        "r2AudioKey": "Music/【完整歌曲】《鬼泣5特别版》维吉尔Theme曲 - Bury the Light（字幕付）_P1_Bury The Light_音频.mp3"
+        "r2AudioKey": "Music/【完整歌曲】《鬼泣5特别版》维吉尔Theme曲 - Bury the Light（字幕付）_P1_Bury The Light_音频.mp3",
+        "r2LrcKey": "Music/Bury the Light - Victor Borba.lrc"
       },
       {
         "id": 3,
         "title": "A lot",
         "artist": "21 savage",
         "cover": "http://p2.music.126.net/Xfn6_0hPXVlbJRQBe_0PGw==/109951165985719582.jpg",
-        "r2AudioKey": "Music/【中字】21 Savage X J.Cole - a lot_音频.mp3"
+        "r2AudioKey": "Music/【中字】21 Savage X J.Cole - a lot_音频.mp3",
+        "r2LrcKey": "Music/a lot - 21 Savage,J. Cole.lrc"
       }
     ]
   },
